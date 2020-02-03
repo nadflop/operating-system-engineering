@@ -1,0 +1,16 @@
+How many smaphores are availabei in DLXOS?
+	32
+
+How many locks are available?
+	64
+
+How is Sem. created?
+	It is called by SemCreate(), which calls SemInit() to initialize the count values
+
+How sem_signal and sem_wait work?
+	sem_wait checks the count and sleeps the process if count is less than zero. It then decrements the count
+	sem_signal wakes up the process and increments the count
+
+What is a handle and how is it used to access semaphores?
+	A handle is an index(sem_t) that jumps to the semaphore to be completed
+
