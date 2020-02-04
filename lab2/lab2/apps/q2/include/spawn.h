@@ -2,6 +2,8 @@
 #define _spawn_h_
 #define BUFFER_SIZE 10
 
+#define PRODUCER producer.dlx.obj
+#define CONSUMER consumer.dlx.obj
 
 typedef struct circ_buffer {
 	int head=0;
