@@ -1,3 +1,7 @@
+#include "lab2-api.h"
+#include "usertraps.h"
+#include "misc.h"
+
 #include "spawn.h"
 
 void main (int argc, char *argv[])
@@ -39,8 +43,6 @@ void main (int argc, char *argv[])
   buf->head = 0;
   buf->tail = 0;
 
-
-
   // Create semaphore to not exit this process until all other processes 
   // have signalled that they are complete.  To do this, we will initialize
   // the semaphore to (-1) * (number of signals), where "number of signals"
@@ -51,7 +53,6 @@ void main (int argc, char *argv[])
     Printf("Bad sem_create in "); Printf(argv[0]); Printf("\n");
     Exit();
   }
-
 
   //Create lock for circular buffer
   if ((buff_lock = lock_create()) == SYNC_SUCCESS){
