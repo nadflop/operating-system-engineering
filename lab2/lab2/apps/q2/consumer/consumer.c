@@ -50,7 +50,7 @@ void main (int argc, char *argv[])
 			buf->tail = (buf->tail + 1) % BUFFERSIZE;
 		}
 		//release the lock
-		if (lock_release(buf_lock) != SYNC_SUCCESS) {
+		if (lock_release(buff_lock) != SYNC_SUCCESS) {
 			Exit();
 		}
 	}
