@@ -9,10 +9,10 @@ typedef struct circ_buffer {
 	int head;
 	int tail;
 	char array[BUFFER_SIZE];
-}
+}circ_buffer;
 
-void buf_enqueue(circ_buffer* buf,char letter);
-char buf_dequeue(circ_buffer* buf);
-void buf_print(circ_buffer* buf);
+//void buf_enqueue(circ_buffer* buf,char letter);
+//char buf_dequeue(circ_buffer* buf);
+//void buf_print(circ_buffer* buf);
 
 #endif
