@@ -488,7 +488,7 @@ int CondHandleBroadcast(cond_t c) {
   int	intrs;
   PCB *pcb;
 
-
+  //Reality check 
   if (c<0) return SYNC_FAIL;
   if (c >= MAX_CONDS) return SYNC_FAIL;
   if (!conds[c].inuse) return SYNC_FAIL;
