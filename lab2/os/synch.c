@@ -316,13 +316,13 @@ int LockHandleRelease(lock_t lock) {
 //
 //	Initialize the condition variable wait and lock.
 //--------------------------------------------------------------------------
-int CondInit(Cond *cond, lock_t lock) {
+int CondInit(Cond *cond) {
   if (!cond) return SYNC_FAIL;
   if (AQueueInit (&cond->wait) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not initialize semaphore waiting queue in SemInit!\n");
     exitsim();
   }
-  cond->lock = lock;
+  //cond->lock = lock;
   return SYNC_SUCCESS;
 
 }
@@ -345,17 +345,18 @@ cond_t CondCreate(lock_t lock) {
   uint32 intrval;
  
   intrval = DisableIntrs();  
-  for(cond=0; sem<MAX_CONDS; cond++) {
+  for(cond=0; cond<MAX_CONDS; cond++) {
     if(conds[cond].inuse==0) {
       conds[cond].inuse = 1;
       break;
     }
   }
 
-  RestoreInts(intrval);
+  RestoreIntrs(intrval);
   if(cond == MAX_CONDS) return SYNC_FAIL;
-  
-  if (CondInit(&conds[cond], lock) != SYNC_SUCCESS) return SYNC_FAIL;
+  //initialize the lock here
+  conds[cond].lock = lock;
+  if (CondInit(&conds[cond]) != SYNC_SUCCESS) return SYNC_FAIL;
   return SYNC_FAIL;
 }
 
@@ -382,22 +383,16 @@ cond_t CondCreate(lock_t lock) {
 //	"actually" wake up until the process calling CondHandleSignal or
 //	CondHandleBroadcast releases the lock explicitly.
 //---------------------------------------------------------------------------
-int CondHandleWait(cond_t c) {
-  // Your code goes here
-  Link	*l;
-  int		intrval;
-    
-  if (c<0) return SYNC_FAIL;
-  if (c >= MAX_CONDS) return SYNC_FAIL;
-  if (!conds[c].inuse) return SYNC_FAIL;
+int CondWait(Cond * cond) {
+  Link *l;
+  int intrval;
+  
+  if (!cond) return SYNC_FAIL;
 
-  //Check if process actually has the lock
-  if (locks[conds[c].lock].pid == -1) return SYNC_FAIL
-
-  intrval = DisableIntrs ();
+  intrval = DisableIntrs();
   dbprintf ('I', "CondWait: Old interrupt value was 0x%x.\n", intrval);
-  dbprintf ('s', "CondWait: Proc %d waiting on cond %d.\n", GetCurrentPid(), (int)c );
-  LockHandleRelease(locks[conds[c].lock]);
+  dbprintf ('s', "CondWait: Proc %d waiting on cond %d.\n", GetCurrentPid(), (int)(cond-conds));
+  LockHandleRelease(&locks[cond->lock]);
 
   //Allocate a link
   if ((l = AQueueAllocLink ((void *)currentPCB)) == NULL) {
@@ -406,7 +401,7 @@ int CondHandleWait(cond_t c) {
   }
 
   //Insert condition into Queue
-  if (AQueueInsertLast (&cond[c]->wait, l) != QUEUE_SUCCESS) 
+  if (AQueueInsertLast (&cond->wait, l) != QUEUE_SUCCESS) {
       printf("FATAL ERROR: could not insert new link into condition waiting queue in condWait!\n");
       exitsim();
   }
@@ -415,10 +410,19 @@ int CondHandleWait(cond_t c) {
   ProcessSleep();
    
   //Acquire the lock
-  LockHandleAcquire(locks[conds[c].lock]);
-  
-  RestoreIntrs (intrval);
+  LockHandleAcquire(&locks[cond->lock]);
+  RestoreIntrs(intrval);
+
   return SYNC_SUCCESS;
+}
+
+int CondHandleWait(cond_t c) {
+  if (c<0) return SYNC_FAIL;
+  if (c >= MAX_CONDS) return SYNC_FAIL;
+  if (!conds[c].inuse) return SYNC_FAIL;
+  //Check if process actually has the lock
+  if (locks[conds[c].lock].pid == -1) return SYNC_FAIL;
+  return CondWait(&conds[c]);
 }
 
 
@@ -441,20 +445,16 @@ int CondHandleWait(cond_t c) {
 //	for such a process to run, the process invoking CondHandleSignal
 //	must explicitly release the lock after the call is complete.
 //---------------------------------------------------------------------------
-int CondHandleSignal(cond_t c) {
+int CondSignal(Cond * cond) {
   Link *l;
   int	intrs;
   PCB *pcb;
+  
+  if (!cond) return SYNC_FAIL;
+  intrs = DisableIntrs();
 
-
-  if (c<0) return SYNC_FAIL;
-  if (c >= MAX_CONDS) return SYNC_FAIL;
-  if (!conds[c].inuse) return SYNC_FAIL;
-
-  intrs = DisableIntrs ();
-
-  if (!AQueueEmpty(&conds[c]->wait)) { // there is a process to wake up
-      l = AQueueFirst(&conds[c]->wait);
+  if (!AQueueEmpty(&cond->wait)) { // there is a process to wake up
+      l = AQueueFirst(&cond->wait);
       pcb = (PCB *)AQueueObject(l);
       if (AQueueRemove(&l) != QUEUE_SUCCESS) { 
         printf("FATAL ERROR: could not remove link from condition variable queue in SemSignal!\n");
@@ -464,8 +464,15 @@ int CondHandleSignal(cond_t c) {
       ProcessWakeup (pcb);
     }
 
-  RestoreIntrs (intrs);
+  RestoreIntrs(intrs);
   return SYNC_SUCCESS;
+}
+
+int CondHandleSignal(cond_t c) {
+  if (c<0) return SYNC_FAIL;
+  if (c >= MAX_CONDS) return SYNC_FAIL;
+  if (!conds[c].inuse) return SYNC_FAIL;
+  return CondSignal(&conds[c]);
 }
 
 //---------------------------------------------------------------------------
@@ -495,8 +502,8 @@ int CondHandleBroadcast(cond_t c) {
 
   intrs = DisableIntrs ();
 
-  while (!AQueueEmpty(&conds[c]->wait)) { // there is a process to wake up
-      l = AQueueFirst(&conds[c]->wait);
+  while (!AQueueEmpty(&conds[c].wait)) { // there is a process to wake up
+      l = AQueueFirst(&conds[c].wait);
       pcb = (PCB *)AQueueObject(l);
       if (AQueueRemove(&l) != QUEUE_SUCCESS) { 
         printf("FATAL ERROR: could not remove link from condition variable queue in SemSignal!\n");
