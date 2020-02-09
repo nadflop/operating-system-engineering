@@ -10,11 +10,13 @@ void main (int argc, char *argv[])
 	uint32 h_mem;
 	sem_t s_procs_completed;
 	lock_t buff_lock;
+	cond_t cond_full;
+	cond_t cond_empty;
 	int i = 0;
 	char str[] = "Hello World";
 
 	//check for correct no of arg
-	if (argc != 4) {
+	if (argc != 6) {
 		Printf("Usage");
 		Printf(argv[0]);
 		Printf("<handle_to_shared_memory_page> <handle_to_page_mapped_semaphore<handle to lock>");
@@ -25,6 +27,8 @@ void main (int argc, char *argv[])
 	h_mem = dstrtol(argv[1], NULL, 10);
 	s_procs_completed = dstrtol(argv[2], NULL, 10);
 	buff_lock = dstrtol(argv[3], NULL, 10);
+    cond_full = dstrtol(argv[4], NULL, 10);
+	cond_empty = dstrtol(argv[5], NULL, 10);
 
 	//map shared memory page into this process memory page
 	if ((buf = (circ_buffer *) shmat(h_mem)) == NULL) {

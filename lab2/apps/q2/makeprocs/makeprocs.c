@@ -55,7 +55,7 @@ void main (int argc, char *argv[])
   }
 
   //Create lock for circular buffer
-  if ((buff_lock = lock_create()) == SYNC_SUCCESS){
+  if ((buff_lock = lock_create()) == SYNC_FAIL){
     Printf("Bad lock_create in");Printf(argv[0]); Printf("\n");
     Exit();
   }

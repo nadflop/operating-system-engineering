@@ -15,6 +15,10 @@ void main (int argc, char *argv[])
   char s_procs_completed_str[10]; // Used as command-line argument to pass page_mapped handle to new processes
   lock_t buff_lock;               // Lock for the buffer
   char str_buff_lock[10];
+  cond_t cond_full;				  // Condtion variable used to handle the checking if buffer is full
+  char str_cond_full[10];		  //Used as command-line argument
+  cond_t cond_empty;		      // Condition variable used to handle the checking if buffer is empty
+  char str_cond_empty[10];		  //Used as command-line argument
 
   if (argc != 2) {
     Printf("Usage: "); Printf(argv[0]); Printf(" <number of processes to create>\n");
@@ -55,8 +59,19 @@ void main (int argc, char *argv[])
   }
 
   //Create lock for circular buffer
-  if ((buff_lock = lock_create()) == SYNC_SUCCESS){
+  if ((buff_lock = lock_create()) == SYNC_FAIL){
     Printf("Bad lock_create in");Printf(argv[0]); Printf("\n");
+    Exit();
+  }
+  
+  //create conditional variables
+  if ((cond_full = cond_create(buff_lock)) == SYNC_FAIL){
+    Printf("Bad cond_create in");Printf(argv[0]); Printf("\n");
+    Exit();
+  }
+
+  if ((cond_empty = cond_create(buff_lock)) == SYNC_FAIL){
+    Printf("Bad cond_create in");Printf(argv[0]); Printf("\n");
     Exit();
   }
 
@@ -66,13 +81,14 @@ void main (int argc, char *argv[])
   ditoa(h_mem, h_mem_str);
   ditoa(s_procs_completed, s_procs_completed_str);
   ditoa(buff_lock, str_buff_lock);
-
+  ditoa(cond_full, str_cond_full);
+  ditoa(cond_empty, str_cond_empty);
   // Now we can create the processes.  Note that you MUST end your call to
   // process_create with a NULL argument so that the operating system
   // knows how many arguments you are sending.
   for(i=0; i<numprocs; i++) {
-    process_create(PRODUCER, h_mem_str, s_procs_completed_str, str_buff_lock, NULL);
-    process_create(CONSUMER, h_mem_str, s_procs_completed_str, str_buff_lock, NULL);
+    process_create(PRODUCER, h_mem_str, s_procs_completed_str, str_buff_lock, str_cond_full, str_cond_empty, NULL);
+    process_create(CONSUMER, h_mem_str, s_procs_completed_str, str_buff_lock, str_cond_full, str_cond_empty, NULL);
     Printf("Processes %d created\n", i);
   }
 
