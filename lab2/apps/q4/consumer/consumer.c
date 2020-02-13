@@ -40,23 +40,23 @@ void main (int argc, char *argv[])
 	
 	while (i < dstrlen(str)) {
 		//aquire the lock for the process
-		if (lock_acquire(buff_lock) != SYNC_SUCCESS) {
-			Exit();
-		}
+		while (lock_acquire(buff_lock) != SYNC_SUCCESS);
+
 		//check if buffer is empty or not before removing a char
-		if (buf->head == buf->tail) {
-			//buffer is empty
+		while (buf->head == buf->tail) {
+			cond_wait(cond_empty);
 		}
-		else {
-			//buffer is not full
-			Printf("Consumer %d removed: %c\n", getpid(), buf->array[buf->tail]);
-			i++;
-			buf->tail = (buf->tail + 1) % BUFFERSIZE;
-		}
+		
+		//buffer is not empty
+		Printf("Consumer %d removed: %c\n", getpid(), buf->array[buf->tail]);
+		i++;
+		buf->tail = (buf->tail + 1) % BUFFERSIZE;
+		
+		//signal the producer that the buffer is now not full
+		cond_signal(cond_full);
+
 		//release the lock
-		if (lock_release(buff_lock) != SYNC_SUCCESS) {
-			Exit();
-		}
+		while (lock_release(buff_lock) != SYNC_SUCCESS);
 	}
 
 	//signal semaphore that we're done

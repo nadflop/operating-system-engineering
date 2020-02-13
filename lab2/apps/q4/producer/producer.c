@@ -41,25 +41,24 @@ void main (int argc, char *argv[])
 	//TODO: FIX THE CODE TO INCLUDE CONDITIONAL VARIABLE
 	while (i < dstrlen(str)) {
 		//aquire the lock for the process
-		if (lock_acquire(buff_lock) != SYNC_SUCCESS) {
-			Exit();
-		}
+		while (lock_acquire(buff_lock) != SYNC_SUCCESS);
+
 		//check if buffer is full or not before adding a char
-		if (( (buf->head + 1) % BUFFERSIZE) == buf->tail) {
-			//buffer is full
-		}
-		else {
-			//buffer is not full
-			Printf("Producer %d inserted: %c\n", getpid(), str[i]);
-			buf->array[buf->head] = str[i];
-			buf->head = (buf->head + 1) % BUFFERSIZE;
-			i = i + 1;
+		while (( (buf->head + 1) % BUFFERSIZE) == buf->tail) {
+			cond_wait(cond_full);
 		}
 		
+		//buffer is not full
+		Printf("Producer %d inserted: %c\n", getpid(), str[i]);
+		buf->array[buf->head] = str[i];
+		buf->head = (buf->head + 1) % BUFFERSIZE;
+		i = i + 1;
+        
+		//signal the consumer that the buffer is now not empty
+		cond_signal(c_empty);
+		
 		//release the lock
-		if (lock_release(buff_lock) != SYNC_SUCCESS) {
-			Exit();
-		}
+		while (lock_release(buff_lock) != SYNC_SUCCESS);
 	}
 
 	//signal semaphore that we're done
