@@ -264,7 +264,7 @@ L17_LF0:
 	jal	_lock_create
 	nop; not filled.
 	add	r2,r0,r1
-	seqi	r1,r2,#1
+	seqi	r1,r2,#-1
 	beqz	r1,L18_LF0
 	nop; not filled.
 	addi	r29,r29,#-8

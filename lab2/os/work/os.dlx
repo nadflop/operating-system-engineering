@@ -1,7 +1,7 @@
 ; Linked by DLX-LD.
 ; MemSize 122880
-; Data size: 38992
-; Text size: 69272
+; Data size: 39032
+; Text size: 69368
 ; Stack size: 8192
 .text 0x1000
 .data 0x12000
@@ -14745,6 +14745,17 @@ L118_LF5:
 	jr	r31
 	nop
 .endproc _CondInit
+.data
+.align 2
+LC24_LF5:
+.ascii "Cond create\n\000"
+.align 2
+LC25_LF5:
+.ascii "Max_Conds\n\000"
+.align 2
+LC26_LF5:
+.ascii "Bad_Conds\n\000"
+.text
 .align 2
 .proc _CondCreate
 .global _CondCreate
@@ -14758,6 +14769,14 @@ _CondCreate:
 	sw	4(r29),r3
 	sw	8(r29),r4
 	sw	12(r29),r5
+	addi	r29,r29,#-8
+	add	r1,r0,r29
+	lhi	r2,((LC24_LF5)>>16)&0xffff
+	addui	r2,r2,(LC24_LF5)&0xffff
+	sw	(r1),r2
+	jal	_printf
+	nop; delay slot nop
+	addi	r29,r29,#8
 	add	r2,r0,r29
 	jal	_DisableIntrs
 	nop; delay slot nop
@@ -14816,10 +14835,18 @@ L123_LF5:
 	seqi	r2,r1,#32
 	beqz	r2,L127_LF5
 	nop; delay slot nop
+	addi	r29,r29,#-8
+	add	r1,r0,r29
+	lhi	r2,((LC25_LF5)>>16)&0xffff
+	addui	r2,r2,(LC25_LF5)&0xffff
+	sw	(r1),r2
+	jal	_printf
+	nop; delay slot nop
+	addi	r29,r29,#8
+L127_LF5:
 	addi	r1,r0,#-1
 	j	L121_LF5
 	nop; delay slot nop
-L127_LF5:
 	lhi	r1,((_conds_LF5)>>16)&0xffff
 	addui	r1,r1,(_conds_LF5)&0xffff
 	lw	r2,-12(r30)
@@ -14847,11 +14874,19 @@ L127_LF5:
 	snei	r2,r1,#1
 	beqz	r2,L128_LF5
 	nop; delay slot nop
+	addi	r29,r29,#-8
+	add	r1,r0,r29
+	lhi	r2,((LC26_LF5)>>16)&0xffff
+	addui	r2,r2,(LC26_LF5)&0xffff
+	sw	(r1),r2
+	jal	_printf
+	nop; delay slot nop
+	addi	r29,r29,#8
+L128_LF5:
 	addi	r1,r0,#-1
 	j	L121_LF5
 	nop; delay slot nop
-L128_LF5:
-	addi	r1,r0,#-1
+	lw	r1,-12(r30)
 	j	L121_LF5
 	nop; delay slot nop
 L121_LF5:
@@ -14867,21 +14902,21 @@ L121_LF5:
 .endproc _CondCreate
 .data
 .align 2
-LC24_LF5:
+LC27_LF5:
 .ascii "CondWait: Old interrupt value was 0x%x.\n\000"
 .align 2
-LC25_LF5:
+LC28_LF5:
 .ascii "CondWait: Proc %d waiting on cond %d.\n\000"
 .align 2
-LC26_LF5:
+LC29_LF5:
 .ascii "FATAL ERROR: could not allocate link for condition queue in condWait!\n"
 .ascii "\000"
 .align 2
-LC27_LF5:
+LC30_LF5:
 .ascii "FATAL ERROR: could not insert new link into condition waiting queue in"
 .ascii " condWait!\n\000"
 .align 2
-LC28_LF5:
+LC31_LF5:
 .ascii "CondWait: putting process %d to sleep\n\000"
 .text
 .align 2
@@ -14924,8 +14959,8 @@ L130_LF5:
 	nop; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC24_LF5)>>16)&0xffff
-	addui	r2,r2,(LC24_LF5)&0xffff
+	lhi	r2,((LC27_LF5)>>16)&0xffff
+	addui	r2,r2,(LC27_LF5)&0xffff
 	sw	(r1),r2
 	lw	r2,-16(r30)
 	sw	4(r1),r2
@@ -14948,8 +14983,8 @@ L131_LF5:
 	nop; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC24_LF5)>>16)&0xffff
-	addui	r2,r2,(LC24_LF5)&0xffff
+	lhi	r2,((LC27_LF5)>>16)&0xffff
+	addui	r2,r2,(LC27_LF5)&0xffff
 	sw	(r1),r2
 	lw	r2,-16(r30)
 	sw	4(r1),r2
@@ -14976,8 +15011,8 @@ L132_LF5:
 	add	r2,r0,r1
 	addi	r29,r29,#-16
 	add	r1,r0,r29
-	lhi	r3,((LC25_LF5)>>16)&0xffff
-	addui	r3,r3,(LC25_LF5)&0xffff
+	lhi	r3,((LC28_LF5)>>16)&0xffff
+	addui	r3,r3,(LC28_LF5)&0xffff
 	sw	(r1),r3
 	sw	4(r1),r2
 	lw	r3,(r30)
@@ -15015,8 +15050,8 @@ L133_LF5:
 	add	r2,r0,r1
 	addi	r29,r29,#-16
 	add	r1,r0,r29
-	lhi	r3,((LC25_LF5)>>16)&0xffff
-	addui	r3,r3,(LC25_LF5)&0xffff
+	lhi	r3,((LC28_LF5)>>16)&0xffff
+	addui	r3,r3,(LC28_LF5)&0xffff
 	sw	(r1),r3
 	sw	4(r1),r2
 	lw	r3,(r30)
@@ -15066,8 +15101,8 @@ L134_LF5:
 	nop; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC26_LF5)>>16)&0xffff
-	addui	r2,r2,(LC26_LF5)&0xffff
+	lhi	r2,((LC29_LF5)>>16)&0xffff
+	addui	r2,r2,(LC29_LF5)&0xffff
 	sw	(r1),r2
 	jal	_printf
 	nop; delay slot nop
@@ -15091,8 +15126,8 @@ L135_LF5:
 	nop; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC27_LF5)>>16)&0xffff
-	addui	r2,r2,(LC27_LF5)&0xffff
+	lhi	r2,((LC30_LF5)>>16)&0xffff
+	addui	r2,r2,(LC30_LF5)&0xffff
 	sw	(r1),r2
 	jal	_printf
 	nop; delay slot nop
@@ -15119,8 +15154,8 @@ L136_LF5:
 	nop; delay slot nop
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC28_LF5)>>16)&0xffff
-	addui	r3,r3,(LC28_LF5)&0xffff
+	lhi	r3,((LC31_LF5)>>16)&0xffff
+	addui	r3,r3,(LC31_LF5)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -15145,8 +15180,8 @@ L137_LF5:
 	nop; delay slot nop
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC28_LF5)>>16)&0xffff
-	addui	r3,r3,(LC28_LF5)&0xffff
+	lhi	r3,((LC31_LF5)>>16)&0xffff
+	addui	r3,r3,(LC31_LF5)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -15292,11 +15327,11 @@ L139_LF5:
 .endproc _CondHandleWait
 .data
 .align 2
-LC29_LF5:
+LC32_LF5:
 .ascii "FATAL ERROR: could not remove link from condition variable queue in Se"
 .ascii "mSignal!\n\000"
 .align 2
-LC30_LF5:
+LC33_LF5:
 .ascii "CondSignal: Waking up PID %d.\n\000"
 .text
 .align 2
@@ -15362,8 +15397,8 @@ L145_LF5:
 	nop; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC29_LF5)>>16)&0xffff
-	addui	r2,r2,(LC29_LF5)&0xffff
+	lhi	r2,((LC32_LF5)>>16)&0xffff
+	addui	r2,r2,(LC32_LF5)&0xffff
 	sw	(r1),r2
 	jal	_printf
 	nop; delay slot nop
@@ -15394,8 +15429,8 @@ L147_LF5:
 	addi	r29,r29,#8
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC30_LF5)>>16)&0xffff
-	addui	r3,r3,(LC30_LF5)&0xffff
+	lhi	r3,((LC33_LF5)>>16)&0xffff
+	addui	r3,r3,(LC33_LF5)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -15424,8 +15459,8 @@ L148_LF5:
 	addi	r29,r29,#8
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC30_LF5)>>16)&0xffff
-	addui	r3,r3,(LC30_LF5)&0xffff
+	lhi	r3,((LC33_LF5)>>16)&0xffff
+	addui	r3,r3,(LC33_LF5)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -15638,8 +15673,8 @@ L160_LF5:
 	nop; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC29_LF5)>>16)&0xffff
-	addui	r2,r2,(LC29_LF5)&0xffff
+	lhi	r2,((LC32_LF5)>>16)&0xffff
+	addui	r2,r2,(LC32_LF5)&0xffff
 	sw	(r1),r2
 	jal	_printf
 	nop; delay slot nop
@@ -15670,8 +15705,8 @@ L161_LF5:
 	addi	r29,r29,#8
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC30_LF5)>>16)&0xffff
-	addui	r3,r3,(LC30_LF5)&0xffff
+	lhi	r3,((LC33_LF5)>>16)&0xffff
+	addui	r3,r3,(LC33_LF5)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -15700,8 +15735,8 @@ L162_LF5:
 	addi	r29,r29,#8
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC30_LF5)>>16)&0xffff
-	addui	r3,r3,(LC30_LF5)&0xffff
+	lhi	r3,((LC33_LF5)>>16)&0xffff
+	addui	r3,r3,(LC33_LF5)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf

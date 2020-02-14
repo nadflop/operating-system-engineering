@@ -2560,6 +2560,17 @@ L118:
 	jr	r31
 	nop
 .endproc _CondInit
+.data
+	.align 2
+LC24:
+	.ascii "Cond create\n\000"
+	.align 2
+LC25:
+	.ascii "Max_Conds\n\000"
+	.align 2
+LC26:
+	.ascii "Bad_Conds\n\000"
+.text
 	.align 2
 .proc _CondCreate
 .global _CondCreate
@@ -2573,6 +2584,14 @@ _CondCreate:
 	sw	4(r29),r3
 	sw	8(r29),r4
 	sw	12(r29),r5
+	addi	r29,r29,#-8
+	add	r1,r0,r29
+	lhi	r2,((LC24)>>16)&0xffff
+	addui	r2,r2,(LC24)&0xffff
+	sw	(r1),r2
+	jal	_printf
+	nop	; delay slot nop
+	addi	r29,r29,#8
 	add	r2,r0,r29
 	jal	_DisableIntrs
 	nop	; delay slot nop
@@ -2631,10 +2650,18 @@ L123:
 	seqi	r2,r1,#32
 	beqz	r2,L127
 	nop	; delay slot nop
+	addi	r29,r29,#-8
+	add	r1,r0,r29
+	lhi	r2,((LC25)>>16)&0xffff
+	addui	r2,r2,(LC25)&0xffff
+	sw	(r1),r2
+	jal	_printf
+	nop	; delay slot nop
+	addi	r29,r29,#8
+L127:
 	addi	r1,r0,#-1
 	j	L121
 	nop	; delay slot nop
-L127:
 	lhi	r1,((_conds)>>16)&0xffff
 	addui	r1,r1,(_conds)&0xffff
 	lw	r2,-12(r30)
@@ -2662,11 +2689,19 @@ L127:
 	snei	r2,r1,#1
 	beqz	r2,L128
 	nop	; delay slot nop
+	addi	r29,r29,#-8
+	add	r1,r0,r29
+	lhi	r2,((LC26)>>16)&0xffff
+	addui	r2,r2,(LC26)&0xffff
+	sw	(r1),r2
+	jal	_printf
+	nop	; delay slot nop
+	addi	r29,r29,#8
+L128:
 	addi	r1,r0,#-1
 	j	L121
 	nop	; delay slot nop
-L128:
-	addi	r1,r0,#-1
+	lw	r1,-12(r30)
 	j	L121
 	nop	; delay slot nop
 L121:
@@ -2682,21 +2717,21 @@ L121:
 .endproc _CondCreate
 .data
 	.align 2
-LC24:
+LC27:
 	.ascii "CondWait: Old interrupt value was 0x%x.\n\000"
 	.align 2
-LC25:
+LC28:
 	.ascii "CondWait: Proc %d waiting on cond %d.\n\000"
 	.align 2
-LC26:
+LC29:
 	.ascii "FATAL ERROR: could not allocate link for condition queue in condWait!\n"
 	.ascii "\000"
 	.align 2
-LC27:
+LC30:
 	.ascii "FATAL ERROR: could not insert new link into condition waiting queue in"
 	.ascii " condWait!\n\000"
 	.align 2
-LC28:
+LC31:
 	.ascii "CondWait: putting process %d to sleep\n\000"
 .text
 	.align 2
@@ -2739,8 +2774,8 @@ L130:
 	nop	; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC24)>>16)&0xffff
-	addui	r2,r2,(LC24)&0xffff
+	lhi	r2,((LC27)>>16)&0xffff
+	addui	r2,r2,(LC27)&0xffff
 	sw	(r1),r2
 	lw	r2,-16(r30)
 	sw	4(r1),r2
@@ -2763,8 +2798,8 @@ L131:
 	nop	; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC24)>>16)&0xffff
-	addui	r2,r2,(LC24)&0xffff
+	lhi	r2,((LC27)>>16)&0xffff
+	addui	r2,r2,(LC27)&0xffff
 	sw	(r1),r2
 	lw	r2,-16(r30)
 	sw	4(r1),r2
@@ -2791,8 +2826,8 @@ L132:
 	add	r2,r0,r1
 	addi	r29,r29,#-16
 	add	r1,r0,r29
-	lhi	r3,((LC25)>>16)&0xffff
-	addui	r3,r3,(LC25)&0xffff
+	lhi	r3,((LC28)>>16)&0xffff
+	addui	r3,r3,(LC28)&0xffff
 	sw	(r1),r3
 	sw	4(r1),r2
 	lw	r3,(r30)
@@ -2830,8 +2865,8 @@ L133:
 	add	r2,r0,r1
 	addi	r29,r29,#-16
 	add	r1,r0,r29
-	lhi	r3,((LC25)>>16)&0xffff
-	addui	r3,r3,(LC25)&0xffff
+	lhi	r3,((LC28)>>16)&0xffff
+	addui	r3,r3,(LC28)&0xffff
 	sw	(r1),r3
 	sw	4(r1),r2
 	lw	r3,(r30)
@@ -2881,8 +2916,8 @@ L134:
 	nop	; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC26)>>16)&0xffff
-	addui	r2,r2,(LC26)&0xffff
+	lhi	r2,((LC29)>>16)&0xffff
+	addui	r2,r2,(LC29)&0xffff
 	sw	(r1),r2
 	jal	_printf
 	nop	; delay slot nop
@@ -2906,8 +2941,8 @@ L135:
 	nop	; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC27)>>16)&0xffff
-	addui	r2,r2,(LC27)&0xffff
+	lhi	r2,((LC30)>>16)&0xffff
+	addui	r2,r2,(LC30)&0xffff
 	sw	(r1),r2
 	jal	_printf
 	nop	; delay slot nop
@@ -2934,8 +2969,8 @@ L136:
 	nop	; delay slot nop
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC28)>>16)&0xffff
-	addui	r3,r3,(LC28)&0xffff
+	lhi	r3,((LC31)>>16)&0xffff
+	addui	r3,r3,(LC31)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -2960,8 +2995,8 @@ L137:
 	nop	; delay slot nop
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC28)>>16)&0xffff
-	addui	r3,r3,(LC28)&0xffff
+	lhi	r3,((LC31)>>16)&0xffff
+	addui	r3,r3,(LC31)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -3107,11 +3142,11 @@ L139:
 .endproc _CondHandleWait
 .data
 	.align 2
-LC29:
+LC32:
 	.ascii "FATAL ERROR: could not remove link from condition variable queue in Se"
 	.ascii "mSignal!\n\000"
 	.align 2
-LC30:
+LC33:
 	.ascii "CondSignal: Waking up PID %d.\n\000"
 .text
 	.align 2
@@ -3177,8 +3212,8 @@ L145:
 	nop	; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC29)>>16)&0xffff
-	addui	r2,r2,(LC29)&0xffff
+	lhi	r2,((LC32)>>16)&0xffff
+	addui	r2,r2,(LC32)&0xffff
 	sw	(r1),r2
 	jal	_printf
 	nop	; delay slot nop
@@ -3209,8 +3244,8 @@ L147:
 	addi	r29,r29,#8
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC30)>>16)&0xffff
-	addui	r3,r3,(LC30)&0xffff
+	lhi	r3,((LC33)>>16)&0xffff
+	addui	r3,r3,(LC33)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -3239,8 +3274,8 @@ L148:
 	addi	r29,r29,#8
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC30)>>16)&0xffff
-	addui	r3,r3,(LC30)&0xffff
+	lhi	r3,((LC33)>>16)&0xffff
+	addui	r3,r3,(LC33)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -3453,8 +3488,8 @@ L160:
 	nop	; delay slot nop
 	addi	r29,r29,#-8
 	add	r1,r0,r29
-	lhi	r2,((LC29)>>16)&0xffff
-	addui	r2,r2,(LC29)&0xffff
+	lhi	r2,((LC32)>>16)&0xffff
+	addui	r2,r2,(LC32)&0xffff
 	sw	(r1),r2
 	jal	_printf
 	nop	; delay slot nop
@@ -3485,8 +3520,8 @@ L161:
 	addi	r29,r29,#8
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC30)>>16)&0xffff
-	addui	r3,r3,(LC30)&0xffff
+	lhi	r3,((LC33)>>16)&0xffff
+	addui	r3,r3,(LC33)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf
@@ -3515,8 +3550,8 @@ L162:
 	addi	r29,r29,#8
 	addi	r29,r29,#-8
 	add	r2,r0,r29
-	lhi	r3,((LC30)>>16)&0xffff
-	addui	r3,r3,(LC30)&0xffff
+	lhi	r3,((LC33)>>16)&0xffff
+	addui	r3,r3,(LC33)&0xffff
 	sw	(r2),r3
 	sw	4(r2),r1
 	jal	_printf

@@ -6,19 +6,22 @@
 
 void main (int argc, char *argv[])
 {
-  int numprocs = 0;               // Used to store number of processes to create
-  int i;                          // Loop index variable
-  circ_buffer *buf;               // Used to get address of shared memory page of circular buffer
-  uint32 h_mem;                   // Used to hold handle to shared memory page
-  sem_t s_procs_completed;        // Semaphore used to wait until all spawned processes have completed
-  char h_mem_str[10];             // Used as command-line argument to pass mem_handle to new processes
-  char s_procs_completed_str[10]; // Used as command-line argument to pass page_mapped handle to new processes
-  lock_t buff_lock;               // Lock for the buffer
-  char str_buff_lock[10];
-  cond_t cond_full;				  // Condtion variable used to handle the checking if buffer is full
-  char str_cond_full[10];		  //Used as command-line argument
-  cond_t cond_empty;		      // Condition variable used to handle the checking if buffer is empty
-  char str_cond_empty[10];		  //Used as command-line argument
+  int numprocs = 0;               		// Used to store number of processes to create
+  int i;                          		// Loop index variable
+  circ_buffer 	*buf;               		// Used to get address of shared memory page of circular buffer
+  uint32 	h_mem;                   	// Used to hold handle to shared memory page
+  sem_t 	s_procs_completed;        	// Semaphore used to wait until all spawned processes have completed
+  char 		h_mem_str[10];             	// Used as command-line argument to pass mem_handle to new processes
+  char 		s_procs_completed_str[10]; 	// Used as command-line argument to pass page_mapped handle to new processes
+
+  lock_t 	buff_lock;               	// Lock for the buffer
+  char 		str_buff_lock[10];
+
+  cond_t 	cond_full;			// Condtion variable used to handle the checking if buffer is full
+  char 		str_cond_full[10];		// Used as command-line argument
+
+  cond_t 	cond_empty;			// Condition variable used to handle the checking if buffer is empty
+  char 		str_cond_empty[10];		// Used as command-line argument
 
   if (argc != 2) {
     Printf("Usage: "); Printf(argv[0]); Printf(" <number of processes to create>\n");
@@ -65,13 +68,14 @@ void main (int argc, char *argv[])
   }
   
   //create conditional variables
+//NOTE: Why are ther 2 conditional
   if ((cond_full = cond_create(buff_lock)) == SYNC_FAIL){
-    Printf("Bad cond_create in");Printf(argv[0]); Printf("\n");
+    Printf("2 Bad cond_create in ");Printf(argv[0]); Printf("\n");
     Exit();
   }
 
   if ((cond_empty = cond_create(buff_lock)) == SYNC_FAIL){
-    Printf("Bad cond_create in");Printf(argv[0]); Printf("\n");
+    Printf("1 Bad cond_create in");Printf(argv[0]); Printf("\n");
     Exit();
   }
 

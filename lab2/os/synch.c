@@ -343,7 +343,7 @@ int CondInit(Cond *cond) {
 cond_t CondCreate(lock_t lock) {
   cond_t cond;
   uint32 intrval;
- 
+  printf("Cond create\n");
   intrval = DisableIntrs();  
   for(cond=0; cond<MAX_CONDS; cond++) {
     if(conds[cond].inuse==0) {
@@ -353,11 +353,11 @@ cond_t CondCreate(lock_t lock) {
   }
 
   RestoreIntrs(intrval);
-  if(cond == MAX_CONDS) return SYNC_FAIL;
+  if(cond == MAX_CONDS) printf("Max_Conds\n"); return SYNC_FAIL;
   //initialize the lock here
   conds[cond].lock = lock;
-  if (CondInit(&conds[cond]) != SYNC_SUCCESS) return SYNC_FAIL;
-  return SYNC_FAIL;
+  if (CondInit(&conds[cond]) != SYNC_SUCCESS) printf("Bad_Conds\n"); return SYNC_FAIL;
+  return cond;
 }
 
 //---------------------------------------------------------------------------

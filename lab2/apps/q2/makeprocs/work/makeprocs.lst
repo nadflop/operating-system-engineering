@@ -354,7 +354,7 @@
   264  000012d8  0c000268	jal	_lock_create
   265  000012dc  54000000	nop; not filled.
   266  000012e0  00011020	add	r2,r0,r1
-  267  000012e4  60410001	seqi	r1,r2,#1
+  267  000012e4  6041ffff	seqi	r1,r2,#-1
   268  000012e8  1020004c	beqz	r1,L18_LF0
   269  000012ec  54000000	nop; not filled.
   270  000012f0  23bdfff8	addi	r29,r29,#-8
