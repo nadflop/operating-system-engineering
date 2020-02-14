@@ -14,6 +14,7 @@ void main (int argc, char *argv[])
 	cond_t cond_empty;
 	int i = 0;
 	char str[] = "Hello World";
+	char recvStr[12];
 
 	//check for correct no of arg
 	if (argc != 6) {
@@ -27,7 +28,7 @@ void main (int argc, char *argv[])
 	h_mem = dstrtol(argv[1], NULL, 10);
 	s_procs_completed = dstrtol(argv[2], NULL, 10);
 	buff_lock = dstrtol(argv[3], NULL, 10);
-    cond_full = dstrtol(argv[4], NULL, 10);
+    	cond_full = dstrtol(argv[4], NULL, 10);
 	cond_empty = dstrtol(argv[5], NULL, 10);
 
 	//map shared memory page into this process memory page
@@ -40,7 +41,7 @@ void main (int argc, char *argv[])
 	
 	while (i < dstrlen(str)) {
 		//aquire the lock for the process
-		while (lock_acquire(buff_lock) != SYNC_SUCCESS);
+		lock_acquire(buff_lock) != SYNC_SUCCESS;
 
 		//check if buffer is empty or not before removing a char
 		while (buf->head == buf->tail) {
@@ -49,6 +50,7 @@ void main (int argc, char *argv[])
 		
 		//buffer is not empty
 		Printf("Consumer %d removed: %c\n", getpid(), buf->array[buf->tail]);
+		recvStr[i] = buf->array[buf->tail];
 		i++;
 		buf->tail = (buf->tail + 1) % BUFFERSIZE;
 		
@@ -56,11 +58,11 @@ void main (int argc, char *argv[])
 		cond_signal(cond_full);
 
 		//release the lock
-		while (lock_release(buff_lock) != SYNC_SUCCESS);
+		lock_release(buff_lock) != SYNC_SUCCESS;
 	}
 
 	//signal semaphore that we're done
-	Printf("consumer: PID %d is complete.\n", getpid());
+	Printf("consumer: PID %d is complete.String received is ", getpid());
 	if (sem_signal(s_procs_completed) != SYNC_SUCCESS) {
 		Printf("Bad semaphore s_procs_completed (%d) in ", s_procs_completed);
 		Printf(argv[0]);

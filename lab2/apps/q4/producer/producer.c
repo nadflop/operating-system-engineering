@@ -28,7 +28,7 @@ void main (int argc, char *argv[])
 	h_mem = dstrtol(argv[1], NULL, 10);
 	s_procs_completed = dstrtol(argv[2], NULL, 10);
 	buff_lock = dstrtol(argv[3], NULL, 10);
-    cond_full = dstrtol(argv[4], NULL, 10);
+    	cond_full = dstrtol(argv[4], NULL, 10);
 	cond_empty = dstrtol(argv[5], NULL, 10);
 	
 	//map shared memory page into this process memory page
@@ -38,16 +38,18 @@ void main (int argc, char *argv[])
 		Printf("exiting\n");
 		Exit();
 	}
-	//TODO: FIX THE CODE TO INCLUDE CONDITIONAL VARIABLE
+
 	while (i < dstrlen(str)) {
 		//aquire the lock for the process
-		while (lock_acquire(buff_lock) != SYNC_SUCCESS);
+		lock_acquire(buff_lock) != SYNC_SUCCESS;
 
 		//check if buffer is full or not before adding a char
 		while (( (buf->head + 1) % BUFFERSIZE) == buf->tail) {
 			cond_wait(cond_full);
 		}
 		
+		//Check if the buffer is empty
+
 		//buffer is not full
 		Printf("Producer %d inserted: %c\n", getpid(), str[i]);
 		buf->array[buf->head] = str[i];
@@ -55,10 +57,10 @@ void main (int argc, char *argv[])
 		i = i + 1;
         
 		//signal the consumer that the buffer is now not empty
-		cond_signal(c_empty);
+		cond_signal(cond_empty);
 		
 		//release the lock
-		while (lock_release(buff_lock) != SYNC_SUCCESS);
+		lock_release(buff_lock) != SYNC_SUCCESS;
 	}
 
 	//signal semaphore that we're done
