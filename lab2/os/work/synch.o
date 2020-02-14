@@ -2658,10 +2658,10 @@ L123:
 	jal	_printf
 	nop	; delay slot nop
 	addi	r29,r29,#8
-L127:
 	addi	r1,r0,#-1
 	j	L121
 	nop	; delay slot nop
+L127:
 	lhi	r1,((_conds)>>16)&0xffff
 	addui	r1,r1,(_conds)&0xffff
 	lw	r2,-12(r30)
@@ -2697,10 +2697,10 @@ L127:
 	jal	_printf
 	nop	; delay slot nop
 	addi	r29,r29,#8
-L128:
 	addi	r1,r0,#-1
 	j	L121
 	nop	; delay slot nop
+L128:
 	lw	r1,-12(r30)
 	j	L121
 	nop	; delay slot nop

@@ -14843,10 +14843,10 @@ L123_LF5:
 	jal	_printf
 	nop; delay slot nop
 	addi	r29,r29,#8
-L127_LF5:
 	addi	r1,r0,#-1
 	j	L121_LF5
 	nop; delay slot nop
+L127_LF5:
 	lhi	r1,((_conds_LF5)>>16)&0xffff
 	addui	r1,r1,(_conds_LF5)&0xffff
 	lw	r2,-12(r30)
@@ -14882,10 +14882,10 @@ L127_LF5:
 	jal	_printf
 	nop; delay slot nop
 	addi	r29,r29,#8
-L128_LF5:
 	addi	r1,r0,#-1
 	j	L121_LF5
 	nop; delay slot nop
+L128_LF5:
 	lw	r1,-12(r30)
 	j	L121_LF5
 	nop; delay slot nop

@@ -353,10 +353,16 @@ cond_t CondCreate(lock_t lock) {
   }
 
   RestoreIntrs(intrval);
-  if(cond == MAX_CONDS) printf("Max_Conds\n"); return SYNC_FAIL;
+  if(cond == MAX_CONDS) {
+	printf("Max_Conds\n"); 
+	return SYNC_FAIL;
+  }
   //initialize the lock here
   conds[cond].lock = lock;
-  if (CondInit(&conds[cond]) != SYNC_SUCCESS) printf("Bad_Conds\n"); return SYNC_FAIL;
+  if (CondInit(&conds[cond]) != SYNC_SUCCESS){
+	printf("Bad_Conds\n"); 
+	return SYNC_FAIL;
+  }
   return cond;
 }
 
