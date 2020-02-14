@@ -10,6 +10,7 @@ void main (int argc, char *argv[])
 	sem_t s_procs_completed;
 	sem_t SO4;
 	int mol;
+    int i;
 
 	//check for correct no of arg
 	if (argc != 4) {
@@ -24,7 +25,7 @@ void main (int argc, char *argv[])
         SO4 = dstrtol(argv[2], NULL, 10);
 	mol = dstrtol(argv[3], NULL, 10);
 
-	for(int i = 0; i < mol; i++) {
+	for(i = 0; i < mol; i++) {
 			Printf("SO4 injected into Radeon atmosphere, PID: %d\n", getpid());
 			sem_signal(SO4);
 	}

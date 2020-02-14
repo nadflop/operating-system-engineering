@@ -10,6 +10,7 @@ void main (int argc, char *argv[])
 	sem_t s_procs_completed;
 	sem_t H2O;
 	int mol;
+    int i;
 
 	//check for correct no of arg
 	if (argc != 4) {
@@ -24,9 +25,9 @@ void main (int argc, char *argv[])
     H2O = dstrtol(argv[2], NULL, 10);
 	mol = dstrtol(argv[3], NULL, 10);
 
-	for(int i = 0; i < mol; i++) {
-			Printf("H2O injected into Radeon atmosphere, PID: %d\n", getpid());
-			sem_signal(H2O);
+	for(i = 0; i < mol; i++) {
+		Printf("H2O injected into Radeon atmosphere, PID: %d\n", getpid());
+		sem_signal(H2O);
 	}
 
 	//signal semaphore that we're done

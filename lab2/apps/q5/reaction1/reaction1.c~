@@ -7,12 +7,12 @@
 void main (int argc, char *argv[])
 {
 	sem_t s_procs_completed;
-        sem_t H2O;
+    sem_t H2O;
 	sem_t H2;
 	sem_t O2;
 	int numreact;
-        int i;
- 
+    int i;
+
     //check for correct no of arg
 	if (argc != 6) {
 		Printf("Usage");

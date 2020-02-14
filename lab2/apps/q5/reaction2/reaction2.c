@@ -7,10 +7,11 @@
 void main (int argc, char *argv[])
 {
 	sem_t s_procs_completed;
-    sem_t SO4;
+        sem_t SO4;
 	sem_t SO2;
 	sem_t O2;
 	int numreact;
+        int i;
 
     //check for correct no of arg
 	if (argc != 6) {
@@ -27,7 +28,7 @@ void main (int argc, char *argv[])
 	O2 = dstrtol(argv[4], NULL, 10);
 	numreact = dstrtol(argv[5], NULL, 10);
 	
-	for (int i = 0; i < numreact; i++) {
+	for (i = 0; i < numreact; i++) {
 		sem_wait(SO4);
 		sem_signal(SO2);
 		sem_signal(O2);
