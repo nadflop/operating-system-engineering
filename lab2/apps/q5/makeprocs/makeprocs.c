@@ -100,16 +100,6 @@ void main (int argc, char *argv[])
   ditoa(H2SO4, H2SO4_str);
 
 
-
-
-
-  char H2O_str[10];
-  char SO4_str[10];
-  char H2_str[10];
-  char O2_str[10];
-  char SO2_str[10];
-  char H2SO4_str[10];
-
   //Calculate how many times each process needs to iterate
   int numInject_H2O 	= num_H2O;
   int numInject_SO4 	= num_SO4;
