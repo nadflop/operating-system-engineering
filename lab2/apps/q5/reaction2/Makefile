@@ -6,8 +6,8 @@
 # this way because the build procedure for all apps is basically the same.
 
 
-SRCS=consumer.c
-EXEC=consumer.dlx.obj
+SRCS=reaction2.c
+EXEC=reaction2.dlx.obj
 
 include ../Makerules
 
