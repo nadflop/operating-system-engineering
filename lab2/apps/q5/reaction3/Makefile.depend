@@ -1,3 +1,0 @@
-work/reaction3.o: reaction3.c ../../../include/lab2-api.h \
- ../../../include/usertraps.h ../../../include/misc.h \
- ../include/spawn.h
