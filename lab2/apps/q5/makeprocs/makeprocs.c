@@ -114,7 +114,12 @@ void main (int argc, char *argv[])
   numInject_SO4 	= num_SO4;
   numReact1		= num_H2O / 2;
   numReact2		= num_SO4;
-  numReact3		= min(2*numInject_H2O, min(numInject_H2O + num_SO4, num_SO4)); 
+  //numReact3		= min(2*numInject_H2O, min(numInject_H2O + num_SO4, num_SO4)); 
+  numReact3 = min(2*numReact1, numReact2);
+
+  Printf("numReact1: %d\n", numReact1);
+  Printf("numReact2: %d\n", numReact2);
+  Printf("numReact3: %d\n", numReact3);
 
   ditoa(numInject_H2O, numInject_H2O_str);
   ditoa(numInject_SO4, numInject_SO4_str);
