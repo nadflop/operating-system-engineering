@@ -398,7 +398,6 @@ int CondWait(Cond * cond) {
   intrval = DisableIntrs();
   dbprintf ('I', "CondWait: Old interrupt value was 0x%x.\n", intrval);
   dbprintf ('s', "CondWait: Proc %d waiting on cond %d.\n", GetCurrentPid(), (int)(cond-conds));
-  LockHandleRelease(&locks[cond->lock]);
 
   //Allocate a link
   if ((l = AQueueAllocLink ((void *)currentPCB)) == NULL) {
@@ -413,10 +412,14 @@ int CondWait(Cond * cond) {
   }
 
   dbprintf('s', "CondWait: putting process %d to sleep\n", GetCurrentPid());
+  //LockHandleRelease(&locks[cond->lock]);
+  LockHandleRelease(cond->lock);
   ProcessSleep();
-   
+ 
+  //TODO: check if need to acquire the lock again here
   //Acquire the lock
-  LockHandleAcquire(&locks[cond->lock]);
+  //LockHandleAcquire(&locks[cond->lock]);
+  LockHandleAcquire(cond->lock);
   RestoreIntrs(intrval);
 
   return SYNC_SUCCESS;
@@ -497,19 +500,22 @@ int CondHandleSignal(cond_t c) {
 //	must explicitly release the lock after the call completion.
 //---------------------------------------------------------------------------
 int CondHandleBroadcast(cond_t c) {
-  Link *l;
-  int	intrs;
-  PCB *pcb;
-
   //Reality check  
   if (c<0) return SYNC_FAIL;
   if (c >= MAX_CONDS) return SYNC_FAIL;
   if (!conds[c].inuse) return SYNC_FAIL;
+  return CondBroadcast(&conds[c]);
+}
+
+int CondBroadcast(Cond * cond) {
+  Link * l;
+  int intrs;
+  PCB *pcb;
 
   intrs = DisableIntrs ();
 
-  while (!AQueueEmpty(&conds[c].wait)) { // there is a process to wake up
-      l = AQueueFirst(&conds[c].wait);
+  while (!AQueueEmpty(&cond->wait)) { // there is a process to wake up
+      l = AQueueFirst(&cond->wait);
       pcb = (PCB *)AQueueObject(l);
       if (AQueueRemove(&l) != QUEUE_SUCCESS) { 
         printf("FATAL ERROR: could not remove link from condition variable queue in SemSignal!\n");
@@ -521,4 +527,5 @@ int CondHandleBroadcast(cond_t c) {
 
   RestoreIntrs (intrs);
   return SYNC_SUCCESS;
+
 }
