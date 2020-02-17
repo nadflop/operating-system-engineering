@@ -32,6 +32,9 @@ void main (int argc, char *argv[])
   int numReact1;		
   int numReact2;		
   int numReact3;
+  int numH2;
+  int numO2;
+  int numSO2;
 
   char numInject_H2O_str[10]; 	
   char numInject_SO4_str[10]; 	
@@ -109,17 +112,25 @@ void main (int argc, char *argv[])
   ditoa(SO2, SO2_str);
   ditoa(H2SO4, H2SO4_str);
 
-
   numInject_H2O 	= num_H2O;
   numInject_SO4 	= num_SO4;
   numReact1		= num_H2O / 2;
-  numReact2		= num_SO4;
-  //numReact3		= min(2*numInject_H2O, min(numInject_H2O + num_SO4, num_SO4)); 
+  numReact2		= num_SO4; 
+  //2 h2 from reaction1, 1 o2 from reaction1, 1 o2 from reaction2, 1 so2 from reaction2
   numReact3 = min(2*numReact1, numReact2);
-
-  Printf("numReact1: %d\n", numReact1);
-  Printf("numReact2: %d\n", numReact2);
-  Printf("numReact3: %d\n", numReact3);
+  //calculate the leftovers
+  numH2 = 2*numReact1 == numReact3 ? 0 : 2*numReact1 - numReact3;
+  numSO2 = numReact2 == numReact3 ? 0 : numReact2 - numReact3;
+ 
+  if (numReact1 + numReact2 > numReact3) {
+  	numO2 = numReact1 + numReact2 - numReact3;
+  }
+  else if (numReact1 + numReact2 < numReact3) {
+    numO2 = numReact3 - (numReact1 + numReact2);
+  }
+  else {
+    numO2 = 0;
+  }
 
   ditoa(numInject_H2O, numInject_H2O_str);
   ditoa(numInject_SO4, numInject_SO4_str);
@@ -144,4 +155,6 @@ void main (int argc, char *argv[])
     Exit();
   }
   Printf("All other processes completed, exiting main process.\n");
+  Printf("%d H2O's left over. %d H2's left over. %d O2's left over. %d SO2's left over.", numInject_H2O % 2, numH2, numO2, numSO2);
+  Printf("%d H2SO4's created.\n", numReact3);
 }
