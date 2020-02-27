@@ -24,7 +24,8 @@ typedef struct mbox {
 	lock_t lock;
 	cond_t notfull;
 	cond_t notempty;
-	int pid[MBOX_MAX_BUFFERS_PER_MBOX];
+	int pid[PROCESS_MAX_PROCS];
+	int32 inuse;
 } mbox;
 
 typedef int mbox_t; // This is the "type" of mailbox handles

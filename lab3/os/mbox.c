@@ -5,6 +5,9 @@
 #include "queue.h"
 #include "mbox.h"
 
+mbox 		mboxes[MBOX_NUM_MBOXES];
+mbox_message 	mbox_msgs[MBOX_NUM_BUFFERS];
+
 //-------------------------------------------------------
 //
 // void MboxModuleInit();
@@ -19,6 +22,22 @@
 //-------------------------------------------------------
 
 void MboxModuleInit() {
+	int i;
+	int j;
+	
+	//Initialize all mbox inuse to 0
+	for (i = 0; i<MBOX_NUM_MBOXES; i++){
+		mboxes[i].inuse = 0;
+
+		for(j=0; j<PROCESS_MAX_PROCS; j++){
+			mboxes[i].pid[j] = 0;
+		}
+	}
+	
+	//Initialize all msg inuse values to 0
+	for(i=0; i<MBOX_NUM_BUFFERS; i++){
+		mbox_msgs[i].inuse = 0;
+	}
 }
 
 //-------------------------------------------------------
