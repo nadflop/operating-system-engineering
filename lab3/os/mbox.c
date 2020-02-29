@@ -106,7 +106,61 @@ int MboxClose(mbox_t handle) {
 //
 //-------------------------------------------------------
 int MboxSend(mbox_t handle, int length, void* message) {
-  return MBOX_FAIL;
+  
+  int i;
+  int curr = 0;
+  Link * l;
+  int pid = GetCurrentPid(); //get pid
+  
+  //check if we have valid handle and length
+  if (length < 0 || length > MBOX_MAX_MESSAGE_LENGTH) return MBOX_FAIL;
+  if (handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
+
+  //use lock, aquire it here
+  if (LockHandleAcquire(mboxes[handle].lock) != SYNC_SUCCESS) {
+  	printf("Unable to aqcuire lock in MboxSend. Pid: %d \n", pid);
+	exitsim();
+  }
+
+  //proc sanity check, check if mailbox is already opened or not
+  //TODO: how to check?
+
+  //if mbox full, wait for not full
+  CondHandleWait(mboxes[handle].notfull);
+
+  //get unused buffer  <-- atomic
+  for (i=0; i < MBOX_NUM_BUFFERS; i++) {
+  	if (mbox_msgs[i].inuse == 0) {
+		mbox_msgs[i].inuse = 1;
+		curr = i;
+		break;
+	}
+  }
+  
+  //set length and copy data
+  bcopy(message, mbox_msgs[curr].message, length);
+  mbox_msgs[curr].length = length;
+  mbox_msgs[curr].inuse = 1;
+  
+  //create link for message
+  if ((l = AQueAllocLink(&mbox_msgs[curr])) == NULL) {
+  	printf("ERROR: could not allocate link for message in MboxSend\n");
+	exitsim();
+  }
+
+  //add msg to queue, use FIFO
+  AQueueInsertLast(&mboxes[handle].msg_queue, l);
+
+  //release lock
+  if (LockHandleRelease(mboxes[handle].lock) != SYNC_SUCCESS) {
+  	printf("Unable to release lock acquired. Pid: %d \n", GetCurrentPid());
+	exitsim();
+  }
+
+  //signal not empty
+  CondHandleSignal(mboxes[handle].notempty);
+  
+  return MBOX_SUCCESS;
 }
 
 //-------------------------------------------------------
