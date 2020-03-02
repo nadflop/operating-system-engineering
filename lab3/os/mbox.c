@@ -102,7 +102,36 @@ int MboxOpen(mbox_t handle) {
 //
 //-------------------------------------------------------
 int MboxClose(mbox_t handle) {
-  return MBOX_FAIL;
+	int pid = 0;
+	int mbox_lock;
+	pid = getpid();
+	Link* link;
+
+	//Check handle value is valid
+	if(handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
+
+	//Acquire lock
+	if (lock_acquire(mbox[handle].lock) != SYNC_SUCCESS) {
+		Exit();
+	}
+	//Set the current process index to 0
+	mbox[handle].procs[pid] = 0;
+	
+	//Clear the Queue
+	while(!AQueueEmpty(&mboxes[handle].msg_queue){		//Check if the link is empty
+		link = AQueueFirst(&mboxes[handle].msg_queue); 	//Get the first link
+		AQueueRemove(&link);				//Remove the link
+	}
+	
+	mboxes[handle].inuse = 0;
+
+	//Release the lock
+	if (lock_release(mbox[handle].lock) != SYNC_SUCCESS) {
+		Exit();
+	}
+	
+	return MBOX_SUCCESS;
+  	
 }
 
 //-------------------------------------------------------
