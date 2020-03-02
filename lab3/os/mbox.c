@@ -357,7 +357,7 @@ int MboxCloseAllByPid(int pid) {
   
   for (i = 0; i < MBOX_NUM_MBOXES; i++) {
     //check if the mailbox is opened by the pid
-  	if (mboxes[i].pid[pid] == 1) {
+  	if (mboxes[i].procs[pid] == 1) {
 		//use lock, aquire it here
   	    if (LockHandleAcquire(mboxes[i].lock) != SYNC_SUCCESS) {
   			printf("Unable to aqcuire lock in MboxSend. Pid: %d \n", pid);
@@ -365,9 +365,9 @@ int MboxCloseAllByPid(int pid) {
   		}
 		
 		//check if there are other process
-		mboxes[i].pid[pid] = 0;
+		mboxes[i].procs[pid] = 0;
 	    for (j = 0; j < PROCESS_MAX_PROCS; j++) {
-			if (mboxes[i].pid[j] == 1) {
+			if (mboxes[i].procs[j] == 1) {
 				numprocs++;
 			}
 		}
