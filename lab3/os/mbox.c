@@ -200,7 +200,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
   if (handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
 
   //check if mailbox is already opened or not
-  if (mboxes[handle].pid[currpid] != 1) {
+  if (mboxes[handle].procs[currpid] != 1) {
   	return MBOX_FAIL;
   }
 
@@ -282,7 +282,7 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   if (handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
 
   //check if mailbox is already opened or not
-  if (mboxes[handle].pid[currpid] != 1) {
+  if (mboxes[handle].procs[currpid] != 1) {
   	return MBOX_FAIL;
   }
 
