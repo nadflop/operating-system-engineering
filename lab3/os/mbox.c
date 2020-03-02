@@ -69,7 +69,23 @@ mbox_t MboxCreate() {
 //
 //-------------------------------------------------------
 int MboxOpen(mbox_t handle) {
-  return MBOX_FAIL;
+	int pid = 0;
+	int mbox_lock;
+	pid = getpid();
+
+	if(handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
+
+
+	if (lock_acquire(mbox[handle].lock) != SYNC_SUCCESS) {
+		Exit();
+	}
+	mbox[handle].procs[pid] = 1;
+	
+	if (lock_release(mbox[handle].lock) != SYNC_SUCCESS) {
+		Exit();
+	}
+	
+	return MBOX_SUCCESS;
 }
 
 //-------------------------------------------------------
