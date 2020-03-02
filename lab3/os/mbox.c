@@ -5,6 +5,7 @@
 #include "queue.h"
 #include "mbox.h"
 
+
 mbox 		mboxes[MBOX_NUM_MBOXES];
 mbox_message 	mbox_msgs[MBOX_NUM_BUFFERS];
 
@@ -52,39 +53,40 @@ void MboxModuleInit() {
 //-------------------------------------------------------
 mbox_t MboxCreate() {
 	//Grab available mbox atomically
-	int avaiable_slot=0;
+	int available_slot=0;
+	int i =0;
 	while(mboxes[available_slot].inuse == 1){
 		available_slot++;
-		if(available_slot > MBOX_NUM_BOXES) return MBOX_FAIL;
+		if(available_slot > MBOX_NUM_MBOXES) return MBOX_FAIL;
 	}
 	
 	//attach the lock
-	if(mboxes[available_slot].lock = lock_create() == SYNC_FAIL){
-    		Printf("Bad lock_create in"); Printf("\n");
-    		Exit();
+	if((mboxes[available_slot].lock = LockCreate()) == SYNC_FAIL){
+    		printf("Bad lock_create in\n"); 
+    		exitsim();
 	}
 	
 	//create conditional variables
-	if((mboxes[available_slot].notempty = cond_create(mboxes[available_slot].lock)) == SYNC_FAIL){
-    		Printf("Bad cond_create in"); Printf("\n");
-    		Exit();
+	if((mboxes[available_slot].notempty = CondCreate(mboxes[available_slot].lock)) == SYNC_FAIL){
+    		printf("Bad cond_create in"); printf("\n");
+    		exitsim();
 	}
 
-	if((mboxes[available_slot].notfull = cond_create(mboxes[available_slot].lock)) == SYNC_FAIL){
-    		Printf("Bad cond_create in"); Printf("\n");
-    		Exit();
+	if((mboxes[available_slot].notfull = CondCreate(mboxes[available_slot].lock)) == SYNC_FAIL){
+    		printf("Bad cond_create in"); printf("\n");
+    		exitsim();
 	}
 
 	//initialize the msg queue
-	if((AQueueInit(mboxes[available_slot].msg_queue) == QUEUE_FAIL){
-    		Printf("Bad queue init ");Printf("\n");
-    		Exit();
+	if(AQueueInit(&mboxes[available_slot].msg_queue) == QUEUE_FAIL){
+    		printf("Bad queue init ");printf("\n");
+    		exitsim();
 	}
 	//Check that the mbox hasn't been opened yet
-	int i;
+	
 	for(i=0; i<PROCESS_MAX_PROCS; i++){
 		if(mboxes[available_slot].procs[i] == 1){
-			Printf("Error: Process has already opened mailbox\n");			
+			printf("Error: Process has already opened mailbox\n");			
 			return MBOX_FAIL;
 		}
 	}
@@ -108,19 +110,19 @@ mbox_t MboxCreate() {
 //-------------------------------------------------------
 int MboxOpen(mbox_t handle) {
 	int pid = 0;
-	int mbox_lock;
-	pid = getpid();
+	pid = GetCurrentPid();
 
 	if(handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
 
 
-	if (lock_acquire(mbox[handle].lock) != SYNC_SUCCESS) {
-		Exit();
+	if (LockHandleAcquire(mboxes[handle].lock) != SYNC_SUCCESS) {
+		exitsim();
 	}
-	mbox[handle].procs[pid] = 1;
+	mboxes[handle].procs[pid] = 1;
 	
-	if (lock_release(mbox[handle].lock) != SYNC_SUCCESS) {
-		Exit();
+	if (LockHandleRelease(mboxes
+[handle].lock) != SYNC_SUCCESS) {
+		exitsim();
 	}
 	
 	return MBOX_SUCCESS;
@@ -141,19 +143,18 @@ int MboxOpen(mbox_t handle) {
 //-------------------------------------------------------
 int MboxClose(mbox_t handle) {
 	int pid = 0;
-	int mbox_lock;
-	pid = getpid();
-	Link* link;
+	pid = GetCurrentPid();
+	Link *link;
 
 	//Check handle value is valid
 	if(handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
 
 	//Acquire lock
-	if (lock_acquire(mbox[handle].lock) != SYNC_SUCCESS) {
-		Exit();
+	if (LockHandleAcquire(mboxes[handle].lock) != SYNC_SUCCESS) {
+		exitsim();
 	}
 	//Set the current process index to 0
-	mbox[handle].procs[pid] = 0;
+	mboxes[handle].procs[pid] = 0;
 	
 	//Clear the Queue
 	while(!AQueueEmpty(&mboxes[handle].msg_queue){		//Check if the link is empty
@@ -164,8 +165,8 @@ int MboxClose(mbox_t handle) {
 	mboxes[handle].inuse = 0;
 
 	//Release the lock
-	if (lock_release(mbox[handle].lock) != SYNC_SUCCESS) {
-		Exit();
+	if (LockHandleRelease(mboxes[handle].lock) != SYNC_SUCCESS) {
+		exitsim();
 	}
 	
 	return MBOX_SUCCESS;
