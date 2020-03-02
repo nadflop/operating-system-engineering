@@ -30,7 +30,7 @@ void MboxModuleInit() {
 		mboxes[i].inuse = 0;
 
 		for(j=0; j<PROCESS_MAX_PROCS; j++){
-			mboxes[i].pid[j] = 0;
+			mboxes[i].procs[j] = 0;
 		}
 	}
 	
@@ -200,7 +200,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
   if (handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
 
   //check if mailbox is already opened or not
-  if (mboxes[handle].pid[currpid] != 1) {
+  if (mboxes[handle].procs[currpid] != 1) {
   	return MBOX_FAIL;
   }
 
@@ -282,7 +282,7 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   if (handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
 
   //check if mailbox is already opened or not
-  if (mboxes[handle].pid[currpid] != 1) {
+  if (mboxes[handle].procs[currpid] != 1) {
   	return MBOX_FAIL;
   }
 
