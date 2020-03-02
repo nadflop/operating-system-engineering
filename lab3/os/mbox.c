@@ -51,7 +51,45 @@ void MboxModuleInit() {
 //
 //-------------------------------------------------------
 mbox_t MboxCreate() {
-  return MBOX_FAIL;
+	//Grab available mbox atomically
+	int avaiable_slot=0;
+	while(mboxes[available_slot].inuse == 1){
+		available_slot++;
+		if(available_slot > MBOX_NUM_BOXES) return MBOX_FAIL;
+	}
+	
+	//attach the lock
+	if(mboxes[available_slot].lock = lock_create() == SYNC_FAIL){
+    		Printf("Bad lock_create in"); Printf("\n");
+    		Exit();
+	}
+	
+	//create conditional variables
+	if((mboxes[available_slot].notempty = cond_create(mboxes[available_slot].lock)) == SYNC_FAIL){
+    		Printf("Bad cond_create in"); Printf("\n");
+    		Exit();
+	}
+
+	if((mboxes[available_slot].notfull = cond_create(mboxes[available_slot].lock)) == SYNC_FAIL){
+    		Printf("Bad cond_create in"); Printf("\n");
+    		Exit();
+	}
+
+	//initialize the msg queue
+	if((AQueueInit(mboxes[available_slot].msg_queue) == QUEUE_FAIL){
+    		Printf("Bad queue init ");Printf("\n");
+    		Exit();
+	}
+	//Check that the mbox hasn't been opened yet
+	int i;
+	for(i=0; i<PROCESS_MAX_PROCS; i++){
+		if(mboxes[available_slot].procs[i] == 1){
+			Printf("Error: Process has already opened mailbox\n");			
+			return MBOX_FAIL;
+		}
+	}
+	
+	return MBOX_SUCCESS;
 }
 
 //-------------------------------------------------------
