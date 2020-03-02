@@ -30,7 +30,7 @@ void MboxModuleInit() {
 		mboxes[i].inuse = 0;
 
 		for(j=0; j<PROCESS_MAX_PROCS; j++){
-			mboxes[i].pid[j] = 0;
+			mboxes[i].procs[j] = 0;
 		}
 	}
 	
