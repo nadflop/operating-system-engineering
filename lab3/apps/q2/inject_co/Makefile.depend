@@ -1,2 +1,0 @@
-work/inject_co.o: inject_co.c ../../../include/usertraps.h \
- ../../../include/misc.h ../include/spawn.h
