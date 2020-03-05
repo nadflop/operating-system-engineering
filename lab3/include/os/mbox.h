@@ -25,7 +25,7 @@ typedef struct mbox {
 	cond_t notfull;
 	cond_t notempty;
 	int procs[PROCESS_MAX_PROCS];
-	int32 inuse;
+	uint32 inuse;
 } mbox;
 
 typedef int mbox_t; // This is the "type" of mailbox handles

@@ -120,8 +120,7 @@ int MboxOpen(mbox_t handle) {
 	}
 	mboxes[handle].procs[pid] = 1;
 	
-	if (LockHandleRelease(mboxes
-[handle].lock) != SYNC_SUCCESS) {
+	if (LockHandleRelease(mboxes[handle].lock) != SYNC_SUCCESS) {
 		exitsim();
 	}
 	
@@ -203,9 +202,9 @@ int MboxSend(mbox_t handle, int length, void* message) {
   	return MBOX_FAIL;
   }
 
-  if (mboxes[handle].inuse != 1) {
-  	return MBOX_FAIL;
-  }
+  //if (mboxes[handle].inuse != 1) {
+  //	return MBOX_FAIL;
+  //}
 
   //if mbox full, wait for not full
   //TODO: check if this makes sense or not later
@@ -277,17 +276,25 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   int currpid = GetCurrentPid(); //get pid
   
   //check if we have valid handle and length
-  if (maxlength > MBOX_MAX_MESSAGE_LENGTH) return MBOX_FAIL;
-  if (handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
+  if (maxlength > MBOX_MAX_MESSAGE_LENGTH) {
+  	printf("maxlength problem");
+	return MBOX_FAIL;
+  }
+  if (handle < 0 || handle > MBOX_NUM_MBOXES) {
+  	printf("handle problem");
+	return MBOX_FAIL;
+  }
 
   //check if mailbox is already opened or not
   if (mboxes[handle].procs[currpid] != 1) {
-  	return MBOX_FAIL;
+  	printf("mailbox unopened?");
+	return MBOX_FAIL;
   }
 
-  if (mboxes[handle].inuse != 1) {
-  	return MBOX_FAIL;
-  }
+ // if (mboxes[handle].inuse != 1) {
+ // 	printf("mailbox inuse is 0?");
+//	return MBOX_FAIL;
+ // }
 
   //if mbox empty, wait for not empty
   //TODO: check if this makes sense or not later
