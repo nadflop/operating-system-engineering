@@ -6,13 +6,13 @@
 void main (int argc, char *argv[])
 {
 
-	sem_t s_procs_completed;
-	sem_t H2O;
-	int mol;
+	mbox_t s_procs_completed;
+	mbox_t S2;
+	char mes[] = "S2";
     int i;
 
 	//check for correct no of arg
-	if (argc != 4) {
+	if (argc != 3) {
 		Printf("Usage");
 		Printf(argv[0]);
 		Printf("<handle_to_shared_memory_page> <handle_to_page_mapped_semaphore<handle to lock>");
@@ -21,12 +21,24 @@ void main (int argc, char *argv[])
 
 	//convert command line str to int
 	s_procs_completed = dstrtol(argv[1], NULL, 10);
-    H2O = dstrtol(argv[2], NULL, 10);
-	mol = dstrtol(argv[3], NULL, 10);
+    S2 = dstrtol(argv[2], NULL, 10);
 
-	for(i = 0; i < mol; i++) {
-		Printf("H2O injected into Radeon atmosphere, PID: %d\n", getpid());
-		sem_signal(H2O);
+    //open mailbox
+	if (mbox_open(S2) != MBOX_SUCCESS) {
+		Printf("Injection S0: %d Couldn't open mbox\n", getpid());
+		Exit();
+	}
+	//send mail
+	if (mbox_send(S2, sizeof(mes), (void *) mes) != MBOX_SUCCESS) {
+		Printf("Injection S0: %d Couldn't send mbox\n", getpid());
+		Exit();
+	}
+
+	Printf("S2 injected into Radeon atmosphere, PID: %d\n", getpid());
+	//close mailbox
+	if (mbox_close(S2) != MBOX_SUCCESS) {
+		Printf("Injection S0: %d Couldn't close mbox\n", getpid());
+		Exit();
 	}
 
 	//signal semaphore that we're done
