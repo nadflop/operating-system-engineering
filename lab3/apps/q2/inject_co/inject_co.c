@@ -20,8 +20,8 @@ void main (int argc, char *argv[])
 	}
 
 	//convert command line str to int
-	s_procs_completed = dstrtol(argv[1], NULL, 10);
-    CO = dstrtol(argv[2], NULL, 10);
+	s_procs_completed = dstrtol(argv[2], NULL, 10);
+    CO = dstrtol(argv[1], NULL, 10);
 
     //open mailbox
 	if (mbox_open(CO) != MBOX_SUCCESS) {
@@ -29,7 +29,7 @@ void main (int argc, char *argv[])
 		Exit();
 	}
 	//send mail
-	if (mbox_send(CO, sizeof(mes), (void *) mes) != MBOX_SUCCESS) {
+	if (mbox_send(CO, sizeof(char), (void *) &mes) != MBOX_SUCCESS) {
 		Printf("Injection C0: %d Couldn't send mbox\n", getpid());
 		Exit();
 	}

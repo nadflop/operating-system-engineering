@@ -9,7 +9,7 @@ void main (int argc, char *argv[])
     mbox_t S2;
 	mbox_t S;
 	char mes[] = "S";
-	char buffer[5];
+	char buffer[sizeof("S2") + 1];
 	int s2_rcv;
 
     //check for correct no of arg
@@ -21,19 +21,35 @@ void main (int argc, char *argv[])
 	}
 
 	//convert command line str to int
-	s_procs_completed = dstrtol(argv[1], NULL, 10);
-	S2 = dstrtol(argv[2], NULL, 10);
-	S = dstrtol(argv[3], NULL, 10);
+	s_procs_completed = dstrtol(argv[3], NULL, 10);
+	S2 = dstrtol(argv[1], NULL, 10);
+	S = dstrtol(argv[2], NULL, 10);
 	
 	//open S2 mailbox
 	if (mbox_open(S2) != MBOX_SUCCESS) {
 		Printf("Reaction 1: %d. Couldn't open S2 mailbox\n", getpid());
 		Exit();
 	}
+	//open S mailbox
+	if (mbox_open(S) != MBOX_SUCCESS) {
+		Printf("Reaction 1: %d. Couldn't open S mailbox\n", getpid());
+		Exit();
+	}
+
 	//receive 1 S2
-	s2_rcv = mbox_recv(S2, 2, (void *) &buffer);
-	if (s2_rcv != 2) {
+	if (mbox_recv(S2, sizeof(buffer), (char *) &buffer) == MBOX_FAIL) {
 		Printf("Reaction 1: %d. Couldn't receive S2\n", getpid());
+		Exit();
+	}
+	//Printf("Reaction 1 %d: Received %c\n", getpid(), buffer);
+
+	//send 2 S
+	if (mbox_send(S, 1, (void*) &mes) != MBOX_SUCCESS) {
+		Printf("Reaction 1: %d. Couldn't send S mailbox\n", getpid());
+		Exit();
+	}
+	if (mbox_send(S, 1, (void*) &mes) != MBOX_SUCCESS) {
+		Printf("Reaction 1: %d. Couldn't send S mailbox\n", getpid());
 		Exit();
 	}
 
@@ -42,23 +58,6 @@ void main (int argc, char *argv[])
 		Printf("Reaction 1: %d. Couldn't close S2 mailbox\n", getpid());
 		Exit();
 	}
-
-	//open S mailbox
-	if (mbox_open(S) != MBOX_SUCCESS) {
-		Printf("Reaction 1: %d. Couldn't open S mailbox\n", getpid());
-		Exit();
-	}
-
-	//send 2 S
-	if (mbox_send(S, sizeof(mes), (void*) mes) != MBOX_SUCCESS) {
-		Printf("Reaction 1: %d. Couldn't send S mailbox\n", getpid());
-		Exit();
-	}
-	if (mbox_send(S, sizeof(mes), (void*) mes) != MBOX_SUCCESS) {
-		Printf("Reaction 1: %d. Couldn't send S mailbox\n", getpid());
-		Exit();
-	}
-
 	//close S mailbox
 	if (mbox_close(S) != MBOX_SUCCESS) {
 		Printf("Reaction 1: %d. Couldn't close S mailbox\n", getpid());

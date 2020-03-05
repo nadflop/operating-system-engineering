@@ -11,7 +11,7 @@ void main (int argc, char *argv[])
   mbox_t S;				//mailbox for S
   mbox_t CO; 			//mailbox for CO
   mbox_t O2; 			//mailbox for O2
-  mbox_t C2; 			//mailbox for C2
+  //mbox_t C2; 			//mailbox for C2
   mbox_t SO4; 			//mailbox for SO4
 
   char s_procs_completed_str[10]; // Used as command-line argument to pass page_mapped handle to new processes
@@ -19,7 +19,7 @@ void main (int argc, char *argv[])
   char S_str[10];
   char CO_str[10];
   char O2_str[10];
-  char C2_str[10];
+  //char C2_str[10];
   char SO4_str[10];
 
   //Calculate how many times each process needs to iterate
@@ -38,7 +38,7 @@ void main (int argc, char *argv[])
   // Convert string from ascii command line argument to integer number
   numInject_S2 = dstrtol(argv[1], NULL, 10); // the "10" means base 10
   numInject_CO = dstrtol(argv[2], NULL, 10);
-  Printf("Creating %d SOs and %d COs\n", numInject_S2, numInject_CO);
+  Printf("Creating %d S2s and %d COs\n", numInject_S2, numInject_CO);
 
   // Create semaphore to not exit this process until all other processes 
   // have signalled that they are complete.  To do this, we will initialize
@@ -73,10 +73,10 @@ void main (int argc, char *argv[])
     Exit();
   }
   //C2 Mailbox
-  if ((C2 = mbox_create(0)) == MBOX_FAIL) {
+  /*if ((C2 = mbox_create(0)) == MBOX_FAIL) {
     Printf("Bad mbox_create for C2"); Printf(argv[0]); Printf("\n");
     Exit();
-  }
+  }*/
   //SO4 Mailbox
   if ((SO4 = mbox_create(0)) == MBOX_FAIL) {
     Printf("Bad mbox_create for SO4"); Printf(argv[0]); Printf("\n");
@@ -99,10 +99,10 @@ void main (int argc, char *argv[])
   	Printf("Couldn't open mailbox for O2\n");
 	Exit();
   }
-  if (mbox_open(C2) != MBOX_SUCCESS) {
+ /* if (mbox_open(C2) != MBOX_SUCCESS) {
   	Printf("Couldn't open mailbox for C2\n");
 	Exit();
-  }
+  }*/
   if (mbox_open(SO4) != MBOX_SUCCESS) {
   	Printf("Couldn't open mailbox for SO4\n");
 	Exit();
@@ -116,7 +116,7 @@ void main (int argc, char *argv[])
   ditoa(S, S_str);
   ditoa(CO, CO_str);
   ditoa(O2, O2_str);
-  ditoa(C2, C2_str);
+  //ditoa(C2, C2_str);
   ditoa(SO4, SO4_str);
 
   numReact1		= numInject_S2;
@@ -130,21 +130,26 @@ void main (int argc, char *argv[])
   // Now we can create the processes.  Note that you MUST :qend your call to
   // process_create with a NULL argument so that the operating system
   // knows how many arguments you are sending.
-  for (i = 0; i < numInject_S2; i++) {
-  	process_create(INJECT_S2, s_procs_completed_str, S2_str, NULL);
+  for (i = 0; i < numInject_S2; i ++) {
+  	//if (i < numInject_S2) {
+  	process_create(INJECT_S2, 0, 0, S2_str, s_procs_completed_str, NULL);
   }
-  for (i = 0; i < numInject_CO; i++) {
-  	process_create(INJECT_CO, s_procs_completed_str, CO_str, NULL);
+  for (i = 0; i < numInject_CO; i ++) {
+  	//if (i < numInject_CO) {
+  	process_create(INJECT_CO, 0, 0, CO_str, s_procs_completed_str, NULL);
   }
-  for (i = 0; i < numReact1; i++) {
-  	process_create(REACTION_1, s_procs_completed_str, S2_str, S_str, NULL);
+  for (i = 0; i < numReact1; i ++) {
+  	//if (i < numReact1) {
+  	process_create(REACTION_1, 0, 0, S2_str, S_str, s_procs_completed_str, NULL);
   }
-  for (i = 0; i < numReact2; i++) {
-  	process_create(REACTION_2, s_procs_completed_str, CO_str, O2_str , C2_str, NULL);
+  for (i = 0; i < numReact2; i ++) {
+  	//if (i < numReact2) {
+  	process_create(REACTION_2, 0, 0, CO_str, O2_str, s_procs_completed_str, NULL);
   }
-  for (i = 0; i < numReact3; i++) {
-  	process_create(REACTION_3, s_procs_completed_str, S_str, O2_str, SO4_str, NULL);
+  for (i = 0; i < numReact3; i ++) {
+  	process_create(REACTION_3, 0, 0, S_str, O2_str, SO4_str, s_procs_completed_str, NULL);
   }
+  
 
   // And finally, wait until all spawned processes have finished.
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
@@ -169,10 +174,10 @@ void main (int argc, char *argv[])
   	Printf("Couldn't close mailbox for O2\n");
 	Exit();
   }
-  if (mbox_close(C2) != MBOX_SUCCESS) {
+  /*if (mbox_close(C2) != MBOX_SUCCESS) {
   	Printf("Couldn't close mailbox for C2\n");
 	Exit();
-  }
+  }*/
   if (mbox_close(SO4) != MBOX_SUCCESS) {
   	Printf("Couldn't close mailbox for SO4\n");
 	Exit();

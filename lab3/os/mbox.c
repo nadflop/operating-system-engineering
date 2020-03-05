@@ -229,7 +229,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
   }
   
   //set length and copy from "data"
-  bcopy(message, mbox_msgs[curr].buffer, length);
+  bcopy((char*) message, mbox_msgs[curr].buffer, length);
   mbox_msgs[curr].length = length;
   mbox_msgs[curr].inuse = 1;
   
@@ -322,6 +322,7 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
 
   //copy message to "data"
   bcopy(temp->buffer, message, temp->length);
+  //bcopy(message, temp->buffer, temp->length);
   temp->inuse = 0;
 
   //remove msg from queue, use FIFO
