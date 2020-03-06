@@ -30,6 +30,12 @@
 #define	PROCESS_TYPE_SYSTEM	0x100
 #define	PROCESS_TYPE_USER	0x200
 
+#define MIN_PRORITY 50 //Minimum priority for the user
+#define MAX_PRIORITY 127 //Maximum priority for the user
+#define PRIORITIES_PER_QUEUE 4
+#define NUM_QUEUE 32 
+#define NUM_JIFFIES 100 //number of jiffies until estcpu decay
+
 typedef	void (*VoidFunc)();
 
 // Process control block
@@ -45,6 +51,17 @@ typedef struct PCB {
 
   int           pinfo;          // Turns on printing of runtime stats
   int           pnice;          // Used in priority calculation
+  int runtime;
+  int switchedtime;
+  int wakeuptime;
+  int sleeptime;
+  int priority;
+  double estcpu;
+  int numQuanta;
+  int basePriority;
+  int autowake;
+  int yielding;
+  int idle;
 } PCB;
 
 // Offsets of various registers from the stack pointer in the register
@@ -90,5 +107,16 @@ int GetPidFromAddress(PCB *pcb);
 
 void ProcessUserSleep(int seconds);
 void ProcessYield();
+void ProcessRecallcPriority(PCB * pcb);
+inline int WhichQueue(PCB * pcb);
+int ProcessInsertRunning(PCB * pcb);
+void ProcessDecayEstcpu(PCB * pcb);
+void ProcessDecayEstcpuSleep(PCB * pcb, int time_asleep_jiffies);
+PCB * ProcessFindHighestPriorityPCB();
+void ProcessDecayAllEstcpus();
+void ProcessFixRunQueues();
+int ProcessCountAutowake();
+void ProcessPrintRunQueues();
+
 
 #endif	/* __process_h__ */

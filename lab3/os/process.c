@@ -121,7 +121,7 @@ void ProcessFreeResources (PCB *pcb) {
   // Your code for closing any open mailbox connections
   // that a dying process might have goes here.
   //-----------------------------------------------------
-
+  MboxCloseAllByPid(pcb-pcbs);
 
   // Allocate a new link for this pcb on the freepcbs queue
   if ((pcb->l = AQueueAllocLink(pcb)) == NULL) {
@@ -197,9 +197,27 @@ void ProcessSchedule () {
   PCB *pcb=NULL;
   int i=0;
   Link *l=NULL;
+  int 
 
   dbprintf ('p', "Now entering ProcessSchedule (cur=0x%x, %d ready)\n",
 	    (int)currentPCB, AQueueLength (&runQueue));
+  //update current PCB runtime (cumulative)
+  currentPCB.runtime += (ClkGetCurJiffies() * 0.01) - currentPCB.switchedtime;
+
+  //if pinfo -> print PCB runtime
+  //TODO: ask how to print runtime
+  if (currentPCB.pinfo) {
+  	printf(PROCESS_CPUSTATS_FORMAT, GetCurrentPid(), currentPCB.runtime, 0);
+  }
+  
+  //TODO: check if highest priority pcb is the idlePCB
+  pcb = ProcessFindHighestPriorityPCB();
+  if (pcb == idlePCB) {
+  	//check if there is auto-awake process. exitsim for none
+	
+	
+  }
+
   // The OS exits if there's no runnable process.  This is a feature, not a
   // bug.  An easy solution to allowing no runnable "user" processes is to
   // have an "idle" process that's simply an infinite loop.
