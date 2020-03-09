@@ -29,6 +29,7 @@ void main (int argc, char *argv[])
   int numReact2;		
   int numReact3;
   int i;
+  int j;
 
   if (argc != 3) {
     Printf("Usage: "); Printf(argv[0]); Printf(" <number of processes to create>\n");
@@ -123,6 +124,7 @@ void main (int argc, char *argv[])
   numReact2		= numInject_CO / 4; 
   //2 S2 from reaction1, 2 o2 from reaction2
   numReact3 = min(2*numReact1, numReact2);
+  Printf("S2: %d, CO: %d, 1: %d, 2: %d, 3: %d\n", numInject_S2, numInject_CO, numReact1, numReact2, numReact3);
   //need to calculate numprocs?
   //TODO: check if we need to compute numprocs?
   numprocs = numInject_S2 + numInject_CO + numReact1 + numReact2 + numReact3;
@@ -130,24 +132,35 @@ void main (int argc, char *argv[])
   // Now we can create the processes.  Note that you MUST :qend your call to
   // process_create with a NULL argument so that the operating system
   // knows how many arguments you are sending.
-  for (i = 0; i < numInject_S2; i ++) {
-  	//if (i < numInject_S2) {
-  	process_create(INJECT_S2, 0, 0, S2_str, s_procs_completed_str, NULL);
-  }
-  for (i = 0; i < numInject_CO; i ++) {
-  	//if (i < numInject_CO) {
-  	process_create(INJECT_CO, 0, 0, CO_str, s_procs_completed_str, NULL);
-  }
-  for (i = 0; i < numReact1; i ++) {
-  	//if (i < numReact1) {
-  	process_create(REACTION_1, 0, 0, S2_str, S_str, s_procs_completed_str, NULL);
-  }
-  for (i = 0; i < numReact2; i ++) {
-  	//if (i < numReact2) {
-  	process_create(REACTION_2, 0, 0, CO_str, O2_str, s_procs_completed_str, NULL);
-  }
-  for (i = 0; i < numReact3; i ++) {
-  	process_create(REACTION_3, 0, 0, S_str, O2_str, SO4_str, s_procs_completed_str, NULL);
+
+  while (j < numprocs) {
+  	for (i = 0; i < numInject_S2; i ++) {
+  		//if (i < numInject_S2) {
+  		process_create(INJECT_S2, 0, 0, S2_str, s_procs_completed_str, NULL);
+		j++;
+  	}
+  	for (i = 0; i < numInject_CO; i ++) {
+  		//if (i < numInject_CO) {
+  		process_create(INJECT_CO, 0, 0, CO_str, s_procs_completed_str, NULL);
+		j++;
+  	}
+  	for (i = 0; i < numReact1; i ++) {
+  		//if (i < numReact1) {
+		Printf("it got in here1: %d\n", getpid());
+  		process_create(REACTION_1, 0, 0, S2_str, S_str, s_procs_completed_str, NULL);
+		j++;
+  	}
+  	for (i = 0; i < numReact2; i ++) {
+  		//if (i < numReact2) {
+		Printf("it got in here2: %d\n", getpid());
+  		process_create(REACTION_2, 0, 0, CO_str, O2_str, s_procs_completed_str, NULL);
+		j++;
+  	}
+  	for (i = 0; i < numReact3; i ++) {
+		Printf("it got in here3: %d\n", getpid());
+  		process_create(REACTION_3, 0, 0, S_str, O2_str, SO4_str, s_procs_completed_str, NULL);
+		j++;
+  	}
   }
   
 

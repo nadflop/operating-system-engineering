@@ -25,19 +25,19 @@ void main (int argc, char *argv[])
 
     //open mailbox
 	if (mbox_open(S2) != MBOX_SUCCESS) {
-		Printf("Injection S0: %d Couldn't open mbox\n", getpid());
+		Printf("Injection S2 %d Couldn't open mbox\n", getpid());
 		Exit();
 	}
 	//send mail
-	if (mbox_send(S2, sizeof(char), (void *) &mes) != MBOX_SUCCESS) {
-		Printf("Injection S0: %d Couldn't send mbox\n", getpid());
+	if (mbox_send(S2, 2, (void *) &mes) != MBOX_SUCCESS) {
+		Printf("Injection S2: %d Couldn't send mbox\n", getpid());
 		Exit();
 	}
 
 	Printf("S2 injected into Radeon atmosphere, PID: %d\n", getpid());
 	//close mailbox
 	if (mbox_close(S2) != MBOX_SUCCESS) {
-		Printf("Injection S0: %d Couldn't close mbox\n", getpid());
+		Printf("Injection S2: %d Couldn't close mbox\n", getpid());
 		Exit();
 	}
 

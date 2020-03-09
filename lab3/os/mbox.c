@@ -148,7 +148,7 @@ int MboxClose(mbox_t handle) {
 	if(handle < 0 || handle > MBOX_NUM_MBOXES) return MBOX_FAIL;
 
 	//Acquire lock
-	if (LockHandleAcquire(mboxes[handle].lock) != SYNC_SUCCESS) {
+	if (LockHandleAcquire(mboxes[handle].lock) == SYNC_FAIL) {
 		return MBOX_FAIL;
 	}
 	//Set the current process index to 0
@@ -156,10 +156,10 @@ int MboxClose(mbox_t handle) {
 	
 	//Clear the Queue
 	while(!AQueueEmpty(&mboxes[handle].msg_queue)) {		//Check if the link is empty
-		if ((link = AQueueFirst(&mboxes[handle].msg_queue)) == NULL) { 	//Get the first link
-			printf("Unable to get first link in MboxClose. Pid : %d\n", pid);
-			return MBOX_FAIL;
-		}
+		link = AQueueFirst(&mboxes[handle].msg_queue);//) == NULL) { 	//Get the first link
+		//	printf("Unable to get first link in MboxClose. Pid : %d\n", pid);
+		//	return MBOX_FAIL;
+		//}
 		if (AQueueRemove(&link) != QUEUE_SUCCESS) {				//Remove the link
 			printf("fail to remove message in queue in MboxClose : %d, pid : %d\n", handle, pid);
 			return MBOX_FAIL;
@@ -168,7 +168,7 @@ int MboxClose(mbox_t handle) {
 	mboxes[handle].inuse = 0;
 
 	//Release the lock
-	if (LockHandleRelease(mboxes[handle].lock) != SYNC_SUCCESS) {
+	if (LockHandleRelease(mboxes[handle].lock) == SYNC_FAIL) {
 		return MBOX_FAIL;
 	}
 	
@@ -199,7 +199,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
   Link * l;
   int currpid = GetCurrentPid(); //get pid
   //JUST ADDED THIS
-  uint32 intrval;
+  //uint32 intrval;
   
   //check if we have valid handle and length
   if (length < 0 || length > MBOX_MAX_MESSAGE_LENGTH) return MBOX_FAIL;
@@ -211,8 +211,9 @@ int MboxSend(mbox_t handle, int length, void* message) {
   }
 
   //use lock, aquire it here
-  if (LockHandleAcquire(mboxes[handle].lock) != SYNC_SUCCESS) {
+  if (LockHandleAcquire(mboxes[handle].lock) == SYNC_FAIL) {
   	printf("Unable to aqcuire lock in MboxSend. Pid: %d \n", currpid);
+	//exitsim();
 	return MBOX_FAIL;
   }
   
@@ -221,11 +222,12 @@ int MboxSend(mbox_t handle, int length, void* message) {
   	printf("PID(send): %d\n", GetCurrentPid());
 	if (CondHandleWait(mboxes[handle].notfull) != SYNC_SUCCESS){
 		printf("Bad condWait in MboxSend() for mbox: %d, pid: %d\n", handle, currpid);
+		//exitsim();
 		return MBOX_FAIL;	
 	}
   }
 
-  intrval = DisableIntrs();
+  //intrval = DisableIntrs();
   //get unused buffer  <-- atomic
   for (i=0; i < MBOX_NUM_BUFFERS; i++) {
   	if (mbox_msgs[i].inuse == 0) {
@@ -234,7 +236,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
 		break;
 	}
   }
-  RestoreIntrs(intrval);
+  //RestoreIntrs(intrval);
  
   mbox_msgs[curr].length = length;
   //set length and copy from "data"
@@ -242,26 +244,29 @@ int MboxSend(mbox_t handle, int length, void* message) {
   mbox_msgs[curr].inuse = 1;
   
   //create link for message
-  if ((l = AQueueAllocLink(&mbox_msgs[curr].buffer)) == NULL) {
-  	printf("ERROR: could not allocate link for message in MboxSend\n");
-	return MBOX_FAIL;
-  }
+  l = AQueueAllocLink(&mbox_msgs[curr].buffer);//) == NULL) {
+  //	printf("ERROR: could not allocate link for message in MboxSend\n");
+//	return MBOX_FAIL;
+  //}
 
   //add msg to queue, use FIFO
   if (AQueueInsertLast(&mboxes[handle].msg_queue, l) != QUEUE_SUCCESS) {
   	printf("Unable to insert message to the queue in MboxSend\n");
+	//exitsim();
 	return MBOX_FAIL;
   }
 
   //signal not empty
-  if (CondHandleSignal(mboxes[handle].notempty) != SYNC_SUCCESS){
+  if (CondHandleSignal(mboxes[handle].notempty) == SYNC_FAIL){
 		printf("Bad condSignal in MboxSend() for mbox: %d, pid: %d", handle, currpid);
+		//exitsim();
 		return MBOX_FAIL;
   }
 
   //release lock
-  if (LockHandleRelease(mboxes[handle].lock) != SYNC_SUCCESS) {
+  if (LockHandleRelease(mboxes[handle].lock) == SYNC_FAIL) {
   	printf("Unable to release lock acquired. Pid: %d \n", GetCurrentPid());
+	//exitsim();
 	return MBOX_FAIL;
   }
 
@@ -303,12 +308,14 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   //check if mailbox is already opened or not
   if (mboxes[handle].procs[currpid] != 1) {
   	printf("mailbox unopened?");
+	//exitsim();
 	return MBOX_FAIL;
   }
 
   //use lock, aquire it here
   if (LockHandleAcquire(mboxes[handle].lock) != SYNC_SUCCESS) {
   	printf("Unable to aqcuire lock in MboxSend. Pid: %d \n", currpid);
+	//exitsim();
 	return MBOX_FAIL;
   }
 
@@ -316,16 +323,17 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   while ( AQueueEmpty(&mboxes[handle].msg_queue)) {
 	if (CondHandleWait(mboxes[handle].notempty) != SYNC_SUCCESS){
 		printf("Bad condWait in MboxRecv() for mbox: %d, pid: %d\n", handle, currpid);
+		//exitsim();
 		return MBOX_FAIL;
 	}
   }
   
   //mailbox is FIFO
   //get first message in the list
-  if ( (l = AQueueFirst(&(mboxes[handle].msg_queue))) == NULL) {
-    printf("Unable to get first message in queue in MboxRecv\n");
-	return MBOX_FAIL;
-  }
+  l = AQueueFirst(&(mboxes[handle].msg_queue));//) == NULL) {
+  //  printf("Unable to get first message in queue in MboxRecv\n");
+  //  return MBOX_FAIL;
+  //}
   temp = (mbox_message *) l->object;
 
   //check if message buffer length is longer/larger than maxlength
@@ -337,23 +345,26 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   //copy message to "data"
   bcopy((void*) temp->buffer, message, temp->length);
   size = ((mbox_message *)(AQueueObject(l)))->length;
-  //printf("MESSAGE SIZE: %d, temp length: %d\n", size, temp->length);
+  printf("MESSAGE SIZE: %d, temp length: %d\n", size, temp->length);
   temp->inuse = 0;
 
   //remove msg from queue, use FIFO
   if (AQueueRemove(&l) != QUEUE_SUCCESS) {
     printf("Unable to remove message from queue in MboxRecv\n");
+	//exitsim();
 	return MBOX_FAIL;
   }
 
   //signal not full
   if (CondHandleSignal(mboxes[handle].notfull) != SYNC_SUCCESS){
 		printf("Bad condSignal in MboxRecv() for mbox: %d, pid: %d", handle, currpid);
+		//exitsim();
 		return MBOX_FAIL;
 	}
   //release lock
   if (LockHandleRelease(mboxes[handle].lock) != SYNC_SUCCESS) {
   	printf("Unable to release lock acquired. Pid: %d \n", GetCurrentPid());
+	//exitsim();
 	return MBOX_FAIL;
   }
   
@@ -402,10 +413,10 @@ int MboxCloseAllByPid(int pid) {
 		if (numprocs == 1) {
 			//remove all queued up messages
 			while (!AQueueEmpty(&mboxes[i].msg_queue)) {
-				if ((l = AQueueFirst(&(mboxes[i].msg_queue))) == NULL) {
-					printf("Unable to get first link in MboxCloseAllByPid\n");
-					return MBOX_FAIL;
-				}
+				l = AQueueFirst(&(mboxes[i].msg_queue));//) == NULL) {
+				//	printf("Unable to get first link in MboxCloseAllByPid\n");
+				//	return MBOX_FAIL;
+				//}
 				if (AQueueRemove(&l) != QUEUE_SUCCESS) {
     				printf("Unable to remove message from queue in MboxCloseAllByPid\n");
 					return MBOX_FAIL;
