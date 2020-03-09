@@ -196,28 +196,27 @@ void ProcessSetResult (PCB * pcb, uint32 result) {
 void ProcessSchedule () {
   PCB *pcb=NULL;
   int i=0;
-  Link *l=NULL;
-  int 
+  Link *l=NULL; 
 
   dbprintf ('p', "Now entering ProcessSchedule (cur=0x%x, %d ready)\n",
 	    (int)currentPCB, AQueueLength (&runQueue));
   //update current PCB runtime (cumulative)
-  currentPCB.runtime += (ClkGetCurJiffies() * 0.01) - currentPCB.switchedtime;
+  currentPCB->runtime += (ClkGetCurJiffies() * 0.01) - currentPCB->switchedtime;
 
   //if pinfo -> print PCB runtime
   //TODO: ask how to print runtime
-  if (currentPCB.pinfo) {
-  	printf(PROCESS_CPUSTATS_FORMAT, GetCurrentPid(), currentPCB.runtime, 0);
+  if (currentPCB->pinfo) {
+  	printf(PROCESS_CPUSTATS_FORMAT, GetCurrentPid(), currentPCB->runtime, 0);
   }
   
   //TODO: check if highest priority pcb is the idlePCB
-  pcb = ProcessFindHighestPriorityPCB();
+ /* pcb = ProcessFindHighestPriorityPCB();
   if (pcb == idlePCB) {
   	//check if there is auto-awake process. exitsim for none
 	
 	
   }
-
+*/
   // The OS exits if there's no runnable process.  This is a feature, not a
   // bug.  An easy solution to allowing no runnable "user" processes is to
   // have an "idle" process that's simply an infinite loop.
