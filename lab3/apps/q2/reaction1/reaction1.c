@@ -30,14 +30,12 @@ void main (int argc, char *argv[])
 		Printf("Reaction 1: %d. Couldn't open S2 mailbox\n", getpid());
 		Exit();
 	}
-	Printf("in reaction1b: %d, argc: %d\n", getpid(), argc);
 	//open S mailbox
 	
 	if (mbox_open(S) != MBOX_SUCCESS) {
 		Printf("Reaction 1: %d. Couldn't open S mailbox\n", getpid());
 		Exit();
 	}
-	Printf("in reaction1c: %d, argc: %d\n", getpid(), argc);
 	//receive 1 S2
 	if (mbox_recv(S2, 2, (void*) &buffer) == MBOX_FAIL) {
 		Printf("pRINT SOMETHING PLEASE\n\n");
@@ -45,19 +43,16 @@ void main (int argc, char *argv[])
 		Exit();
 	}
 	//mbox_recv(S2, 2, (void*) buffer);
-	Printf("Reaction 1d %d: Received %c\n", getpid(), buffer);
 
 	//send 2 S
 	if (mbox_send(S, 1, (void*) &mes) != MBOX_SUCCESS) {
 		Printf("Reaction 1: %d. Couldn't send S mailbox\n", getpid());
 		Exit();
 	}
-	Printf("in reaction1e: %d, argc: %d\n", getpid(), argc);
 	if (mbox_send(S, 1, (void*) &mes) != MBOX_SUCCESS) {
 		Printf("Reaction 1: %d. Couldn't send S mailbox\n", getpid());
 		Exit();
 	}
-	Printf("in reaction1f: %d, argc: %d\n", getpid(), argc);
 	//close S2 mailbox
 	if (mbox_close(S2) != MBOX_SUCCESS) {
 		Printf("Reaction 1: %d. Couldn't close S2 mailbox\n", getpid());

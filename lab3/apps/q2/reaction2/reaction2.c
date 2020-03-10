@@ -11,7 +11,7 @@ void main (int argc, char *argv[])
 	//mbox_t C2;
 	char mes1[] = "O2";
 	//char mes2[] = "C2";
-	char buffer[sizeof("CO") + 1];
+	char buffer[5];
 
     //check for correct no of arg
 	if (argc != 4) {
@@ -44,22 +44,22 @@ void main (int argc, char *argv[])
 	}*/
 
 	//receive 4 CO
-	if (mbox_recv(CO, sizeof(buffer), (char*) &buffer) == MBOX_FAIL) {
+	if (mbox_recv(CO, 2, (void*) &buffer) == MBOX_FAIL) {
 		Printf("Reaction 2: %d. Couldn't receive CO\n", getpid());
 		Exit();
 	}
 	//Printf("Reaction 2 %d: Received %c\n", getpid(), buffer);
-	if (mbox_recv(CO, sizeof(buffer), (char *) &buffer) == MBOX_FAIL) {
+	if (mbox_recv(CO, 2, (void *) &buffer) == MBOX_FAIL) {
 		Printf("Reaction 2: %d. Couldn't receive CO\n", getpid());
 		Exit();
 	}
 	//Printf("Reaction 2 %d: Received %c\n", getpid(), buffer);
-	if (mbox_recv(CO, sizeof(buffer), (char *) &buffer) == MBOX_FAIL) {
+	if (mbox_recv(CO, 2, (void *) &buffer) == MBOX_FAIL) {
 		Printf("Reaction 2: %d. Couldn't receive CO\n", getpid());
 		Exit();
 	}
 	//Printf("Reaction 2 %d: Received %c\n", getpid(), buffer);
-	if (mbox_recv(CO, sizeof(buffer), (char *) &buffer) == MBOX_FAIL) {
+	if (mbox_recv(CO, 2, (void *) &buffer) == MBOX_FAIL) {
 		Printf("Reaction 2: %d. Couldn't receive CO\n", getpid());
 		Exit();
 	}

@@ -10,8 +10,8 @@ void main (int argc, char *argv[])
 	mbox_t O2;
 	mbox_t SO4;
 	char mes[] = "SO4";
-	char buffer1[sizeof("S") +1];
-	char buffer2[sizeof("O2") + 1];
+	char buffer1[5];
+	char buffer2[5];
 
     //check for correct no of arg
 	if (argc != 5) {
@@ -43,19 +43,19 @@ void main (int argc, char *argv[])
 		Exit();
 	}
 	//receive 1 S
-	if (mbox_recv(S, sizeof(buffer1), (char *) &buffer1) == MBOX_FAIL) {
+	if (mbox_recv(S, 1, (void *) &buffer1) == MBOX_FAIL) {
 		Printf("Reaction 3: %d. Couldn't receive S\n", getpid());
 		Exit();
 	}
 	//Printf("Reaction 3 %d: Received %c\n", getpid(), buffer1);
 
 	//receive 2 O2
-	if (mbox_recv(O2, sizeof(buffer2), (char *) &buffer2) == MBOX_FAIL) {
+	if (mbox_recv(O2, 2, (void *) &buffer2) == MBOX_FAIL) {
 		Printf("Reaction 3: %d. Couldn't receive O2\n", getpid());
 		Exit();
 	}
 	//Printf("Reaction 3 %d: Received %c\n", getpid(), buffer2);
-	if (mbox_recv(O2, sizeof(buffer2), (char *) &buffer2) == MBOX_FAIL) {
+	if (mbox_recv(O2, 2, (void *) &buffer2) == MBOX_FAIL) {
 		Printf("Reaction 3: %d. Couldn't receive O2\n", getpid());
 		Exit();
 	}
@@ -76,7 +76,9 @@ void main (int argc, char *argv[])
 		Printf("Reaction 3: %d. Couldn't close S mailbox\n", getpid());
 		Exit();
 	}
+	
 	Printf("S + 2 O2 -> SO4 reacted, PID:%d\n", getpid());	
+
 	//close O2 mailbox
 	if (mbox_close(O2) != MBOX_SUCCESS) {
 		Printf("Reaction 3: %d. Couldn't close O2 mailbox\n", getpid());

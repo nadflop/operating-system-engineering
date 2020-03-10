@@ -29,7 +29,7 @@ void main (int argc, char *argv[])
   int numReact2;		
   int numReact3;
   int i;
-  int j;
+  int j = 0;
 
   if (argc != 3) {
     Printf("Usage: "); Printf(argv[0]); Printf(" <number of processes to create>\n");
