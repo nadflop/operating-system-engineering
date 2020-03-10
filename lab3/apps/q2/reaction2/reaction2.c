@@ -8,13 +8,13 @@ void main (int argc, char *argv[])
 	sem_t s_procs_completed;
     mbox_t CO;
 	mbox_t O2;
-	//mbox_t C2;
+	mbox_t C2;
 	char mes1[] = "O2";
-	//char mes2[] = "C2";
+	char mes2[] = "C2";
 	char buffer[5];
 
     //check for correct no of arg
-	if (argc != 4) {
+	if (argc != 5) {
 		Printf("Usage");
 		Printf(argv[0]);
 		Printf("<handle_to_shared_memory_page> <handle_to_page_mapped_semaphore<handle to lock>");
@@ -22,10 +22,10 @@ void main (int argc, char *argv[])
 	}
 
 	//convert command line str to int
-	s_procs_completed = dstrtol(argv[3], NULL, 10);
+	s_procs_completed = dstrtol(argv[4], NULL, 10);
 	CO = dstrtol(argv[1], NULL, 10);
 	O2 = dstrtol(argv[2], NULL, 10);
-	//C2 = dstrtol(argv[3], NULL, 10);
+	C2 = dstrtol(argv[3], NULL, 10);
 
 	//open CO mailbox
 	if (mbox_open(CO) != MBOX_SUCCESS) {
@@ -37,11 +37,11 @@ void main (int argc, char *argv[])
 		Printf("Reaction 2: %d. Couldn't open O2 mailbox\n", getpid());
 		Exit();
 	}
-	/*//open C2 mailbox
+	//open C2 mailbox
 	if (mbox_open(C2) != MBOX_SUCCESS) {
 		Printf("Reaction 2: %d. Couldn't open C2 mailbox\n", getpid());
 		Exit();
-	}*/
+	}
 
 	//receive 4 CO
 	if (mbox_recv(CO, 2, (void*) &buffer) == MBOX_FAIL) {
@@ -75,7 +75,7 @@ void main (int argc, char *argv[])
 		Exit();
 	}
 
-	/*//send 2 C2
+	//send 2 C2
 	if (mbox_send(C2, 2, (void*) &mes2) != MBOX_SUCCESS) {
 		Printf("Reaction 2: %d. Couldn't send C2 mailbox\n", getpid());
 		Exit();
@@ -83,7 +83,7 @@ void main (int argc, char *argv[])
 	if (mbox_send(C2, 2, (void*) &mes2) != MBOX_SUCCESS) {
 		Printf("Reaction 2: %d. Couldn't send C2 mailbox\n", getpid());
 		Exit();
-	}*/
+	}
 
 	//close O2 mailbox
 	if (mbox_close(O2) != MBOX_SUCCESS) {
@@ -95,11 +95,11 @@ void main (int argc, char *argv[])
 		Printf("Reaction 2: %d. Couldn't close CO mailbox\n", getpid());
 		Exit();
 	}
-/*	//close C2 mailbox
+	//close C2 mailbox
 	if (mbox_close(C2) != MBOX_SUCCESS) {
 		Printf("Reaction 2: %d. Couldn't close C2 mailbox\n", getpid());
 		Exit();
-	}*/
+	}
 
 	Printf("CO -> 2 O2 + 2 C2 reacted, PID:%d\n", getpid());	
 
