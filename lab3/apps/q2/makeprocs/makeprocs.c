@@ -21,6 +21,7 @@ void main (int argc, char *argv[])
   char O2_str[10];
   char C2_str[10];
   char SO4_str[10];
+  char buffer[10];
 
   //Calculate how many times each process needs to iterate
   int numInject_S2 = 0; 	
@@ -28,6 +29,8 @@ void main (int argc, char *argv[])
   int numReact1;		
   int numReact2;		
   int numReact3;
+  int numLeftOverS;
+  int numLeftOverC2;
   int i;
   int j = 0;
 
@@ -128,7 +131,8 @@ void main (int argc, char *argv[])
   //need to calculate numprocs?
   //TODO: check if we need to compute numprocs?
   numprocs = numInject_S2 + numInject_CO + numReact1 + numReact2 + numReact3;
-
+  numLeftOverS = (2*numReact1 == numReact3) ? 0 : 2*numReact1 - numReact3;
+  numLeftOverC2 = (numReact2 == numReact3) ? 0 : numReact2 - numReact3;
   // Now we can create the processes.  Note that you MUST :qend your call to
   // process_create with a NULL argument so that the operating system
   // knows how many arguments you are sending.
@@ -146,23 +150,30 @@ void main (int argc, char *argv[])
   	}
   	for (i = 0; i < numReact1; i ++) {
   		//if (i < numReact1) {
-		Printf("it got in here1: %d\n", getpid());
+		//Printf("it got in here1: %d\n", getpid());
   		process_create(REACTION_1, 0, 0, S2_str, S_str, s_procs_completed_str, NULL);
 		j++;
   	}
   	for (i = 0; i < numReact2; i ++) {
   		//if (i < numReact2) {
-		Printf("it got in here2: %d\n", getpid());
+		//Printf("it got in here2: %d\n", getpid());
   		process_create(REACTION_2, 0, 0, CO_str, O2_str, C2_str, s_procs_completed_str, NULL);
 		j++;
   	}
   	for (i = 0; i < numReact3; i ++) {
-		Printf("it got in here3: %d\n", getpid());
+		//Printf("it got in here3: %d\n", getpid());
   		process_create(REACTION_3, 0, 0, S_str, O2_str, SO4_str, s_procs_completed_str, NULL);
 		j++;
   	}
   }
-  
+  //TODO: close all the unreceived molecules 
+  for (i = 0; i < numLeftOverS; i++) {
+    mbox_recv(S, 1, (void *) &buffer);
+  }
+
+  for (i = 0; i < numLeftOverC2; i++) {
+    mbox_recv(C2, 2, (void *) &buffer);
+  }
 
   // And finally, wait until all spawned processes have finished.
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
