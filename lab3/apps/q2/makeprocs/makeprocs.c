@@ -31,6 +31,7 @@ void main (int argc, char *argv[])
   int numReact3;
   int numLeftOverS;
   int numLeftOverC2;
+  int numLeftOverCO;
   int i;
   int j = 0;
 
@@ -133,6 +134,7 @@ void main (int argc, char *argv[])
   numprocs = numInject_S2 + numInject_CO + numReact1 + numReact2 + numReact3;
   numLeftOverS = (2*numReact1 == numReact3) ? 0 : 2*numReact1 - numReact3;
   numLeftOverC2 = (numReact2 == numReact3) ? 0 : numReact2 - numReact3;
+  numLeftOverCO = numInject_CO - 4*numReact2;
   // Now we can create the processes.  Note that you MUST :qend your call to
   // process_create with a NULL argument so that the operating system
   // knows how many arguments you are sending.
@@ -167,12 +169,22 @@ void main (int argc, char *argv[])
   	}
   }
   //TODO: close all the unreceived molecules 
-  for (i = 0; i < numLeftOverS; i++) {
-    mbox_recv(S, 1, (void *) &buffer);
-  }
+  //Printf("LO_S: %d, LO_C2: %d, LO_CO: %d\n\n",numLeftOverS, numLeftOverC2, numLeftOverCO);
+  if (j == numprocs && numReact3 != 0) {
+    for (i = 0; i < numLeftOverS; i++) {
+      mbox_recv(S, 1, (void *) &buffer);
+      //Printf("closed one S\n\n");
+    }
 
-  for (i = 0; i < numLeftOverC2; i++) {
-    mbox_recv(C2, 2, (void *) &buffer);
+    for (i = 0; i < numLeftOverC2; i++) {
+      mbox_recv(C2, 2, (void *) &buffer);
+      //Printf("closed one C2\n\n");
+    }
+    
+    for (i = 0; i < numLeftOverCO; i++) {
+      mbox_recv(CO, 2, (void *) &buffer);
+      //Printf("closed one CO\n\n");
+    }
   }
 
   // And finally, wait until all spawned processes have finished.

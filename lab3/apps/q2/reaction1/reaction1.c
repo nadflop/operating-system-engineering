@@ -11,7 +11,6 @@ void main (int argc, char *argv[])
 	char mes[] = "S";
 	char buffer[10];
 
-	Printf("in reaction1a: %d, argc: %d\n", getpid(), argc);
     //check for correct no of arg
 	if (argc != 4) {
 		Printf("Usage");
