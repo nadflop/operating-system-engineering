@@ -27,6 +27,7 @@ static Queue	freepcbs;
 
 // List of processes that are ready to run (ie, not waiting for something
 // to happen).
+//TODO: does runQueue need be a list of 32 queues?
 static Queue	runQueue;
 
 // List of processes that are waiting for something to happen.  There's no
@@ -53,72 +54,87 @@ uint32 get_argument(char *string);
 
 //----------------------------------------------------------------------
 //
-//	ProcessRecalcPriority
-//
-//
+//	ProcessRecalcPriority: Calculate the priorities
+//      input: PCB *
+//      return: void
+//      Use equation priority = BASE_PRIORITY + estcpu/4 + 2*pnice;
+//      Calculates the new priority for that PCB
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
 //	WhichQueue
-//
-//
+//      input: PCB *
+//      return: int queue_num - Queue that the process belongs in
+//      Uses equation: queue_number = priority / PRIORITIES_PER_QUEUE;
+//      
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
 //	ProcessInsertRunning
-//
+//      input: PCB *
+//      return: int
 //
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
 //	ProcessDecayEstcpu
-//
-//
+//      input: PCB *
+//      return: void
+//      Checks if the process has consumed the whole CPU window and then
+//      increments the estcpu value
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
 //	ProcessDecayEstcpuSleep
-//
-//
+//      input: PCB *, int time_asleep_jiffies
+//      return: void
+//      Uses equations
+//          int num_windows_asleep = sleeptime / (TIME_PER_CPU_WINDOW * CPU_WINDOWS_BETWEEN_DECAYS);
+//          estcpu = estcpu * [ (2*load)/(2*load+1) ] ^ (num_windows_asleep);
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
 //	ProcessFindHighestPriority
-//
-//
+//      input: None
+//      return PCB*
+//      Parses through runQueue looking for process with highest priority
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
 //	ProcessDecayAllEstcpus
-//
-//
+//    input: None
+//    return: void
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
 //	ProcessFixRunQueue
-//
-//
+//     input: None
+//     return: void
+//     Clear the runqueue and re-assign processes to theq queue
+//     based off of the calculated priorities
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
-//	ProcessCountAutowake
-//
-//
+//	ProcessCountAutowake: Look in the waitqueue and see if there are
+//      any processes that have the autowake flag set high
+//      input: None
+//      return: int count
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
 //	ProcessPrintRunQueues
-//
-//
+//      input: None
+//      return: void
+//      Display what is in each run Queue
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
