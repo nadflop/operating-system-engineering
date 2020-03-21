@@ -60,7 +60,9 @@ uint32 get_argument(char *string);
 //      Use equation priority = BASE_PRIORITY + estcpu/4 + 2*pnice;
 //      Calculates the new priority for that PCB
 //----------------------------------------------------------------------
+void ProcessRecalcPriority(PCB *pcb){
 
+}
 //----------------------------------------------------------------------
 //
 //	WhichQueue
@@ -69,7 +71,9 @@ uint32 get_argument(char *string);
 //      Uses equation: queue_number = priority / PRIORITIES_PER_QUEUE;
 //      
 //----------------------------------------------------------------------
+inline int WhichQueue(PCB *pcb){
 
+}
 //----------------------------------------------------------------------
 //
 //	ProcessInsertRunning
@@ -77,7 +81,9 @@ uint32 get_argument(char *string);
 //      return: int
 //
 //----------------------------------------------------------------------
+int ProcessInsertRunning(PCB *pcb){
 
+}
 //----------------------------------------------------------------------
 //
 //	ProcessDecayEstcpu
@@ -86,7 +92,9 @@ uint32 get_argument(char *string);
 //      Checks if the process has consumed the whole CPU window and then
 //      increments the estcpu value
 //----------------------------------------------------------------------
-
+void ProcessDecayEstcpu(PCB *pcb){
+
+}
 //----------------------------------------------------------------------
 //
 //	ProcessDecayEstcpuSleep
@@ -96,7 +104,9 @@ uint32 get_argument(char *string);
 //          int num_windows_asleep = sleeptime / (TIME_PER_CPU_WINDOW * CPU_WINDOWS_BETWEEN_DECAYS);
 //          estcpu = estcpu * [ (2*load)/(2*load+1) ] ^ (num_windows_asleep);
 //----------------------------------------------------------------------
+void ProcessDecayEstcpuSleep(PCB *pcb, int time_asleep_jiffies){
 
+}
 //----------------------------------------------------------------------
 //
 //	ProcessFindHighestPriority
@@ -104,14 +114,18 @@ uint32 get_argument(char *string);
 //      return PCB*
 //      Parses through runQueue looking for process with highest priority
 //----------------------------------------------------------------------
+PCB *ProcessFindHighestPriorityPCB(){
 
+}
 //----------------------------------------------------------------------
 //
 //	ProcessDecayAllEstcpus
 //    input: None
 //    return: void
 //----------------------------------------------------------------------
+void ProcessDecayAllEstcpus(){
 
+}
 //----------------------------------------------------------------------
 //
 //	ProcessFixRunQueue
@@ -120,7 +134,9 @@ uint32 get_argument(char *string);
 //     Clear the runqueue and re-assign processes to theq queue
 //     based off of the calculated priorities
 //----------------------------------------------------------------------
-
+void ProcessFixRunQueues(){
+  
+}
 //----------------------------------------------------------------------
 //
 //	ProcessCountAutowake: Look in the waitqueue and see if there are
@@ -128,7 +144,9 @@ uint32 get_argument(char *string);
 //      input: None
 //      return: int count
 //----------------------------------------------------------------------
-
+int ProcessCountAutowake(){
+  
+}
 //----------------------------------------------------------------------
 //
 //	ProcessPrintRunQueues
@@ -136,7 +154,9 @@ uint32 get_argument(char *string);
 //      return: void
 //      Display what is in each run Queue
 //----------------------------------------------------------------------
-
+void ProcessPrintRunQueues(){
+  
+}
 //----------------------------------------------------------------------
 //
 //	ProcessModuleInit
