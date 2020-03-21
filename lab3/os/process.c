@@ -135,19 +135,13 @@ PCB *ProcessFindHighestPriorityPCB(){
 
 }
 //----------------------------------------------------------------------
-//
-<<<<<<< HEAD
 //	ProcessDecayAllEstcpus (Anthony)
 //
-//
->>>>>>> 038aec36a360282dd9f7bc9d3d6e8a84b36e4d28
 //----------------------------------------------------------------------
 void ProcessDecayAllEstcpus(){
 
 }
 //----------------------------------------------------------------------
-//
-<<<<<<< HEAD
 //	ProcessFixRunQueue
 //     input: None
 //     return: void
@@ -160,8 +154,6 @@ void ProcessFixRunQueues(){
   
 }
 //----------------------------------------------------------------------
-//
-<<<<<<< HEAD
 //	ProcessCountAutowake: Look in the waitqueue and see if there are
 //      any processes that have the autowake flag set high
 //      input: None
@@ -171,8 +163,6 @@ int ProcessCountAutowake(){
   
 }
 //----------------------------------------------------------------------
-//
-<<<<<<< HEAD
 //	ProcessPrintRunQueues
 //      input: None
 //      return: void
@@ -182,7 +172,6 @@ void ProcessPrintRunQueues(){
 
 }
 //----------------------------------------------------------------------
-//
 //	ProcessModuleInit
 //
 //	Initialize the process module.  This involves initializing all
