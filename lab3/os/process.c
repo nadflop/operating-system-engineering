@@ -53,70 +53,103 @@ uint32 get_argument(char *string);
 
 //----------------------------------------------------------------------
 //
-//	ProcessRecalcPriority
+//	ProcessRecalcPriority (Nad)
+//  to solve the problem of "starvation"
+//  process that uses more CPU time gets lower priority
+//  BASE_PRIORITY = 0 for kernel process
+//                  50 for user process
+//----------------------------------------------------------------------
+void ProcessRecalcPriority(PCB * pcb) {
+  if (pcb->flags & PROCESS_TYPE_USER) {
+    pcb->priority = MIN_PRORITY + pcb->estcpu/4 + 2*pcb->pnice;
+  }
+  else {
+        pcb->priority = 0 + pcb->estcpu/4 + 2*pcb->pnice;
+  }
+}
+//----------------------------------------------------------------------
+//
+//	WhichQueue (Nad)
+//  return the queue number for a given priority?
+//  queue_number = priority / PRIORITIES_PER_QUEUE (4)
+//
+//----------------------------------------------------------------------
+int WhichQueue(PCB * pcb){
+  return pcb->priority / PRIORITIES_PER_QUEUE;
+}
+//----------------------------------------------------------------------
+//
+//	ProcessInsertRunning (Nad)
+//  
+//
+//----------------------------------------------------------------------
+/*int ProcessInsertRunning(PCB * pcb){
+  //TODO: do this!
+}*/
+//----------------------------------------------------------------------
+//
+//	ProcessDecayEstcpu (Nad)
+//  decay the estcpu as they run for longer peroid of time
+//  "decay" - processes that have been in the runQueue
+//  for a long time get higher priorities
+//----------------------------------------------------------------------
+void ProcessDecayEstcpu(PCB * pcb){
+  pcb->estcpu = (pcb->estcpu * 2 / 3) + pcb->pnice;
+  ProcessRecalcPriority(pcb);
+}
+//----------------------------------------------------------------------
+//
+//	ProcessDecayEstcpuSleep (Nad)
+//  handling processes that go to sleep before they
+//  use their entire window of CPU time
+//  let the process "catch up" on decays that they missed
+//
+//----------------------------------------------------------------------
+void ProcessDecayEstcpuSleep(PCB * pcb, int time_asleep_jiffies){
+  int num_windows_asleep = 0;
+  int base = 2/3;
+  long long result = 1;
+  if (time_asleep_jiffies >= 10 * PROCESS_QUANTUM_JIFFIES) {
+    num_windows_asleep = pcb->sleeptime / (0.01 * 10);
+    //calculate the exponent
+    while (num_windows_asleep != 0){
+      result *= base;
+      --num_windows_asleep;
+    }
+    pcb->estcpu = pcb->estcpu * result;
+  }
+}
+//----------------------------------------------------------------------
+//
+//	ProcessFindHighestPriority (Anthony)
 //
 //
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
-//	WhichQueue
+//	ProcessDecayAllEstcpus (Anthony)
 //
 //
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
-//	ProcessInsertRunning
+//	ProcessFixRunQueue (Anthony)
 //
 //
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
-//	ProcessDecayEstcpu
-//
-//
-//----------------------------------------------------------------------
-
-//----------------------------------------------------------------------
-//
-//	ProcessDecayEstcpuSleep
+//	ProcessCountAutowake (Anthony)
 //
 //
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 //
-//	ProcessFindHighestPriority
-//
-//
-//----------------------------------------------------------------------
-
-//----------------------------------------------------------------------
-//
-//	ProcessDecayAllEstcpus
-//
-//
-//----------------------------------------------------------------------
-
-//----------------------------------------------------------------------
-//
-//	ProcessFixRunQueue
-//
-//
-//----------------------------------------------------------------------
-
-//----------------------------------------------------------------------
-//
-//	ProcessCountAutowake
-//
-//
-//----------------------------------------------------------------------
-
-//----------------------------------------------------------------------
-//
-//	ProcessPrintRunQueues
+//	ProcessPrintRunQueues (Anthony)
 //
 //
 //----------------------------------------------------------------------

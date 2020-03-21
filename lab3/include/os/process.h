@@ -108,7 +108,7 @@ int GetPidFromAddress(PCB *pcb);
 void ProcessUserSleep(int seconds);
 void ProcessYield();
 void ProcessRecallcPriority(PCB * pcb);
-inline int WhichQueue(PCB * pcb);
+int WhichQueue(PCB * pcb);
 int ProcessInsertRunning(PCB * pcb);
 void ProcessDecayEstcpu(PCB * pcb);
 void ProcessDecayEstcpuSleep(PCB * pcb, int time_asleep_jiffies);
