@@ -80,11 +80,17 @@ int WhichQueue(PCB * pcb){
 //----------------------------------------------------------------------
 //
 //	ProcessInsertRunning (Nad)
-//  
-//
+//  move pcb to the back of the queue
+// return int? what should it return?
+// TODO: think about the return value here
 //----------------------------------------------------------------------
 /*int ProcessInsertRunning(PCB * pcb){
   //TODO: do this!
+  if (AQueueInsertLast(&runQueue[WhichQueue(pcb)],pcb->l) != QUEUE_SUCCESS) {
+    printf("FATAL ERROR: could not insert link into runQueue in ProcessInsertRunning");
+    exitsim();
+  }
+  return 0;
 }*/
 //----------------------------------------------------------------------
 //
