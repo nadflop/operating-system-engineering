@@ -53,92 +53,115 @@ uint32 get_argument(char *string);
 
 
 //----------------------------------------------------------------------
-//
-//	ProcessRecalcPriority: Calculate the priorities
-//      input: PCB *
-//      return: void
-//      Use equation priority = BASE_PRIORITY + estcpu/4 + 2*pnice;
-//      Calculates the new priority for that PCB
+//	ProcessRecalcPriority (Nad)
+//  to solve the problem of "starvation"
+//  process that uses more CPU time gets lower priority
+//  BASE_PRIORITY = 0 for kernel process
+//                  50 for user process
 //----------------------------------------------------------------------
-void ProcessRecalcPriority(PCB *pcb){
-
+void ProcessRecalcPriority(PCB * pcb) {
+  if (pcb->flags & PROCESS_TYPE_USER) {
+    pcb->priority = MIN_PRORITY + pcb->estcpu/4 + 2*pcb->pnice;
+  }
+  else {
+        pcb->priority = 0 + pcb->estcpu/4 + 2*pcb->pnice;
+  }
 }
 //----------------------------------------------------------------------
 //
-//	WhichQueue
-//      input: PCB *
-//      return: int queue_num - Queue that the process belongs in
-//      Uses equation: queue_number = priority / PRIORITIES_PER_QUEUE;
-//      
+//	WhichQueue (Nad)
+//  return the queue number for a given priority?
+//  queue_number = priority / PRIORITIES_PER_QUEUE (4)
+//
 //----------------------------------------------------------------------
-inline int WhichQueue(PCB *pcb){
-
+int WhichQueue(PCB * pcb){
+  return pcb->priority / PRIORITIES_PER_QUEUE;
 }
 //----------------------------------------------------------------------
 //
-//	ProcessInsertRunning
-//      input: PCB *
-//      return: int
-//
+//	ProcessInsertRunning (Nad)
+//  move pcb to the back of the queue
+// return int? what should it return?
+// TODO: think about the return value here
 //----------------------------------------------------------------------
-int ProcessInsertRunning(PCB *pcb){
-
+/*int ProcessInsertRunning(PCB * pcb){
+  //TODO: do this!
+  if (AQueueInsertLast(&runQueue[WhichQueue(pcb)],pcb->l) != QUEUE_SUCCESS) {
+    printf("FATAL ERROR: could not insert link into runQueue in ProcessInsertRunning");
+    exitsim();
+  }
+  return 0;
+}*/
+//----------------------------------------------------------------------
+//
+//	ProcessDecayEstcpu (Nad)
+//  decay the estcpu as they run for longer peroid of time
+//  "decay" - processes that have been in the runQueue
+//  for a long time get higher priorities
+//----------------------------------------------------------------------
+void ProcessDecayEstcpu(PCB * pcb){
+  pcb->estcpu = (pcb->estcpu * 2 / 3) + pcb->pnice;
+  ProcessRecalcPriority(pcb);
 }
 //----------------------------------------------------------------------
 //
-//	ProcessDecayEstcpu
-//      input: PCB *
-//      return: void
-//      Checks if the process has consumed the whole CPU window and then
-//      increments the estcpu value
+//	ProcessDecayEstcpuSleep (Nad)
+//  handling processes that go to sleep before they
+//  use their entire window of CPU time
+//  let the process "catch up" on decays that they missed
+//
 //----------------------------------------------------------------------
-void ProcessDecayEstcpu(PCB *pcb){
-
+void ProcessDecayEstcpuSleep(PCB * pcb, int time_asleep_jiffies){
+  int num_windows_asleep = 0;
+  int base = 2/3;
+  long long result = 1;
+  if (time_asleep_jiffies >= 10 * PROCESS_QUANTUM_JIFFIES) {
+    num_windows_asleep = pcb->sleeptime / (0.01 * 10);
+    //calculate the exponent
+    while (num_windows_asleep != 0){
+      result *= base;
+      --num_windows_asleep;
+    }
+    pcb->estcpu = pcb->estcpu * result;
+  }
 }
 //----------------------------------------------------------------------
 //
-//	ProcessDecayEstcpuSleep
-//      input: PCB *, int time_asleep_jiffies
-//      return: void
-//      Uses equations
-//          int num_windows_asleep = sleeptime / (TIME_PER_CPU_WINDOW * CPU_WINDOWS_BETWEEN_DECAYS);
-//          estcpu = estcpu * [ (2*load)/(2*load+1) ] ^ (num_windows_asleep);
-//----------------------------------------------------------------------
-void ProcessDecayEstcpuSleep(PCB *pcb, int time_asleep_jiffies){
-
-}
-//----------------------------------------------------------------------
+//	ProcessFindHighestPriority (Anthony)
 //
-//	ProcessFindHighestPriority
-//      input: None
-//      return PCB*
-//      Parses through runQueue looking for process with highest priority
+//
 //----------------------------------------------------------------------
 PCB *ProcessFindHighestPriorityPCB(){
 
 }
 //----------------------------------------------------------------------
 //
-//	ProcessDecayAllEstcpus
-//    input: None
-//    return: void
+<<<<<<< HEAD
+//	ProcessDecayAllEstcpus (Anthony)
+//
+//
+>>>>>>> 038aec36a360282dd9f7bc9d3d6e8a84b36e4d28
 //----------------------------------------------------------------------
 void ProcessDecayAllEstcpus(){
 
 }
 //----------------------------------------------------------------------
 //
+<<<<<<< HEAD
 //	ProcessFixRunQueue
 //     input: None
 //     return: void
 //     Clear the runqueue and re-assign processes to theq queue
 //     based off of the calculated priorities
+//
+//
 //----------------------------------------------------------------------
 void ProcessFixRunQueues(){
   
 }
 //----------------------------------------------------------------------
 //
+<<<<<<< HEAD
 //	ProcessCountAutowake: Look in the waitqueue and see if there are
 //      any processes that have the autowake flag set high
 //      input: None
@@ -149,13 +172,14 @@ int ProcessCountAutowake(){
 }
 //----------------------------------------------------------------------
 //
+<<<<<<< HEAD
 //	ProcessPrintRunQueues
 //      input: None
 //      return: void
 //      Display what is in each run Queue
 //----------------------------------------------------------------------
 void ProcessPrintRunQueues(){
-  
+
 }
 //----------------------------------------------------------------------
 //
