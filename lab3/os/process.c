@@ -97,12 +97,7 @@ int ProcessInsertRunning(PCB * pcb){
 //  "decay" - processes that have been in the runQueue
 //  for a long time get higher priorities
 //----------------------------------------------------------------------
-<<<<<<< HEAD
-void ProcessDecayEstcpu(PCB * pcb){
-  //TODO: Anthony: "I think this needs to check if process used the whole window and then increment estcpu  "
-=======
 void ProcessDecayEstcpu(PCB * pcb){
->>>>>>> 9308bebccdb5dc323c6e913650e306adf4c220bb
   pcb->estcpu = (pcb->estcpu * 2 / 3) + pcb->pnice;
   ProcessRecalcPriority(pcb);
 }
@@ -191,7 +186,7 @@ void ProcessFixRunQueues(){
       while(link != NULL){
         //Check if current process belongs in current RunQueue
         if (WhichQueue(link->object) != i){
-          
+
           //Remove link from current Queue
           if(AQueueRemove(&link)!=QUEUE_SUCCESS){
             printf("Fatal Error: Link could not be removed");
@@ -214,7 +209,14 @@ void ProcessFixRunQueues(){
 //      return: int count
 //----------------------------------------------------------------------
 int ProcessCountAutowake(){
-  
+  Link * link = AQueueFirst(&waitQueue)
+  int count = 0;
+  while(AQueueNext(link) != NULL){
+      if(AQueueObject(link)->autowake == 1){}
+        count++;
+      }
+    link = AQueueNext(link);
+  }
 }
 //----------------------------------------------------------------------
 //	ProcessPrintRunQueues
@@ -223,7 +225,25 @@ int ProcessCountAutowake(){
 //      Display what is in each run Queue
 //----------------------------------------------------------------------
 void ProcessPrintRunQueues(){
+  int i;
+  Link *link; //First link of the runQueue
 
+  printf("Print RunQueues\n");
+  //Loop through all run queues
+  for(i=0;i<NUM_QUEUE; i++){
+    //Check if link has processes
+    if(AQueueEmpty(&runQueue[i]) == 0){
+      printf("Queue %d\n\t", i);
+      
+      //Traverse through runQueue
+      link = AQueueFirst(&runQueue[i]);
+      while(AQueueNext(link) != NULL){
+        printf("%s->", AQueueObject(link)->name)
+        link = AQueueNext(link)
+      }
+    }
+  }  
+  printf("Print End\n")
 }
 
 //----------------------------------------------------------------------
