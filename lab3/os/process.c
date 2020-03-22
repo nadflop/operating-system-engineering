@@ -80,18 +80,16 @@ int WhichQueue(PCB * pcb){
 //----------------------------------------------------------------------
 //
 //	ProcessInsertRunning (Nad)
-//  move pcb to the back of the queue
-// return int? what should it return?
-// TODO: think about the return value here
+//  move pcb to the back of the runQueue
 //----------------------------------------------------------------------
-/*int ProcessInsertRunning(PCB * pcb){
-  //TODO: do this!
-  if (AQueueInsertLast(&runQueue[WhichQueue(pcb)],pcb->l) != QUEUE_SUCCESS) {
+int ProcessInsertRunning(PCB * pcb){
+  if (AQueueInsertLast(&runQueue,pcb->l) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not insert link into runQueue in ProcessInsertRunning");
     exitsim();
   }
-  return 0;
-}*/
+  
+  return (pcb - pcbs);
+}
 //----------------------------------------------------------------------
 //
 //	ProcessDecayEstcpu (Nad)
@@ -99,8 +97,12 @@ int WhichQueue(PCB * pcb){
 //  "decay" - processes that have been in the runQueue
 //  for a long time get higher priorities
 //----------------------------------------------------------------------
+<<<<<<< HEAD
 void ProcessDecayEstcpu(PCB * pcb){
   //TODO: Anthony: "I think this needs to check if process used the whole window and then increment estcpu  "
+=======
+void ProcessDecayEstcpu(PCB * pcb){
+>>>>>>> 9308bebccdb5dc323c6e913650e306adf4c220bb
   pcb->estcpu = (pcb->estcpu * 2 / 3) + pcb->pnice;
   ProcessRecalcPriority(pcb);
 }
