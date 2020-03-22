@@ -83,7 +83,7 @@ int WhichQueue(PCB * pcb){
 //  move pcb to the back of the runQueue
 //----------------------------------------------------------------------
 int ProcessInsertRunning(PCB * pcb){
-  if (AQueueInsertLast(&runQueue,pcb->l) != QUEUE_SUCCESS) {
+  if (AQueueInsertLast(&runQueue[WhichQueue(pcb)],pcb->l) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not insert link into runQueue in ProcessInsertRunning");
     exitsim();
   }
