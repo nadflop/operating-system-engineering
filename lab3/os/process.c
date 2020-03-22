@@ -28,7 +28,7 @@ static Queue	freepcbs;
 // List of processes that are ready to run (ie, not waiting for something
 // to happen).
 //TODO: does runQueue need be a list of 32 queues?
-static Queue	runQueue;
+static Queue	runQueue[NUM_QUEUE];
 
 // List of processes that are waiting for something to happen.  There's no
 // reason why this must be a single list; there could be many lists for many
@@ -100,6 +100,7 @@ int WhichQueue(PCB * pcb){
 //  for a long time get higher priorities
 //----------------------------------------------------------------------
 void ProcessDecayEstcpu(PCB * pcb){
+  //TODO: Anthony: "I think this needs to check if process used the whole window and then increment estcpu  "
   pcb->estcpu = (pcb->estcpu * 2 / 3) + pcb->pnice;
   ProcessRecalcPriority(pcb);
 }
@@ -128,18 +129,43 @@ void ProcessDecayEstcpuSleep(PCB * pcb, int time_asleep_jiffies){
 //----------------------------------------------------------------------
 //
 //	ProcessFindHighestPriority (Anthony)
-//
-//
+//    input: none
+//    return: PCB *
+//      Parse through the run queues and find the process with
+//    the highest priority
 //----------------------------------------------------------------------
 PCB *ProcessFindHighestPriorityPCB(){
-
+  int i;
+  Link *first; //First link of the runQueue
+  //Loop through all run queues
+  for(i=0;i<NUM_QUEUE; i++){
+    //Check if link has processes
+    if(AQueueEmpty(&runQueue[i]) == 0){
+      first = AQueueFirst(&runQueue[i]);
+      return first->object; //See Link struct in queue.h
+    }
+  }
 }
 //----------------------------------------------------------------------
 //	ProcessDecayAllEstcpus (Anthony)
-//
+//    input: None
+//    return: void
+//      To each process in the runQueue perform the equation:
+//      estcpu = [ estcpu * (2*load)/(2*load + 1) ] + pnice;
 //----------------------------------------------------------------------
 void ProcessDecayAllEstcpus(){
-
+  int i;
+  for(i=0;i<NUM_QUEUE;i++){
+    //Check if queue is not empty
+    if(AQueueEmpty(&runQueue[i])==0){
+      Link* link = AQueueFirst(&runQueue[i])
+      //traverse through queue and calculate priority of each PCB
+      while(link != NULL){
+        ProcessDecayEstcpu(link->object);
+        link = AQueueNext(link);
+      }
+    }
+  }
 }
 //----------------------------------------------------------------------
 //	ProcessFixRunQueue
@@ -151,7 +177,33 @@ void ProcessDecayAllEstcpus(){
 //
 //----------------------------------------------------------------------
 void ProcessFixRunQueues(){
-  
+  int i;
+  //Loop through each runQueue
+  for(i=0;i<NUM_QUEUE;i++){
+
+    //Check if queue is not empty
+    if(AQueueEmpty(&runQueue[i])==0){
+      Link* link = AQueueFirst(&runQueue[i])
+      //traverse through queue and calculate priority of each PCB
+
+      while(link != NULL){
+        //Check if current process belongs in current RunQueue
+        if (WhichQueue(link->object) != i){
+          
+          //Remove link from current Queue
+          if(AQueueRemove(&link)!=QUEUE_SUCCESS){
+            printf("Fatal Error: Link could not be removed");
+          }
+
+          //Push link to the end of the proper queue
+          if(AQueueInsertLast(runQueue[WhichQueue(AQueueObject(link), link)])){
+            printf("Fatal Error: Link could not be inserted into new run queue");
+          }
+        }
+        link = AQueueNext(link);
+      }
+    }
+  }
 }
 //----------------------------------------------------------------------
 //	ProcessCountAutowake: Look in the waitqueue and see if there are
@@ -171,6 +223,7 @@ int ProcessCountAutowake(){
 void ProcessPrintRunQueues(){
 
 }
+
 //----------------------------------------------------------------------
 //	ProcessModuleInit
 //
