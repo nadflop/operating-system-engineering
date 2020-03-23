@@ -142,6 +142,7 @@ PCB *ProcessFindHighestPriorityPCB(){
       return first->object; //See Link struct in queue.h
     }
   }
+  return NULL;
 }
 //----------------------------------------------------------------------
 //	ProcessDecayAllEstcpus (Anthony)
@@ -152,13 +153,14 @@ PCB *ProcessFindHighestPriorityPCB(){
 //----------------------------------------------------------------------
 void ProcessDecayAllEstcpus(){
   int i;
+  Link * link;
   for(i=0;i<NUM_QUEUE;i++){
     //Check if queue is not empty
     if(AQueueEmpty(&runQueue[i])==0){
-      Link* link = AQueueFirst(&runQueue[i])
+      link = AQueueFirst(&runQueue[i]);
       //traverse through queue and calculate priority of each PCB
       while(link != NULL){
-        ProcessDecayEstcpu(link->object);
+        ProcessDecayEstcpu(((PCB *)AQueueObject(link)));
         link = AQueueNext(link);
       }
     }
@@ -175,12 +177,14 @@ void ProcessDecayAllEstcpus(){
 //----------------------------------------------------------------------
 void ProcessFixRunQueues(){
   int i;
+  Link * link;
+  int runQueueNum;
   //Loop through each runQueue
   for(i=0;i<NUM_QUEUE;i++){
 
     //Check if queue is not empty
     if(AQueueEmpty(&runQueue[i])==0){
-      Link* link = AQueueFirst(&runQueue[i])
+      link = AQueueFirst(&runQueue[i]);
       //traverse through queue and calculate priority of each PCB
 
       while(link != NULL){
@@ -193,7 +197,8 @@ void ProcessFixRunQueues(){
           }
 
           //Push link to the end of the proper queue
-          if(AQueueInsertLast(runQueue[WhichQueue(AQueueObject(link), link)])){
+          runQueueNum = WhichQueue((PCB *)AQueueObject(link));
+          if(AQueueInsertLast(&runQueue[runQueueNum], link)){
             printf("Fatal Error: Link could not be inserted into new run queue");
           }
         }
@@ -209,14 +214,15 @@ void ProcessFixRunQueues(){
 //      return: int count
 //----------------------------------------------------------------------
 int ProcessCountAutowake(){
-  Link * link = AQueueFirst(&waitQueue)
+  Link * link = AQueueFirst(&waitQueue);
   int count = 0;
   while(AQueueNext(link) != NULL){
-      if(AQueueObject(link)->autowake == 1){}
+      if( ((PCB *)AQueueObject(link))->autowake == 1){
         count++;
       }
     link = AQueueNext(link);
   }
+  return count;
 }
 //----------------------------------------------------------------------
 //	ProcessPrintRunQueues
@@ -238,12 +244,12 @@ void ProcessPrintRunQueues(){
       //Traverse through runQueue
       link = AQueueFirst(&runQueue[i]);
       while(AQueueNext(link) != NULL){
-        printf("%s->", AQueueObject(link)->name)
-        link = AQueueNext(link)
+        printf("%s->", ((PCB *)AQueueObject(link))->name);
+        link = AQueueNext(link);
       }
     }
   }  
-  printf("Print End\n")
+  printf("Print End\n");
 }
 
 //----------------------------------------------------------------------
