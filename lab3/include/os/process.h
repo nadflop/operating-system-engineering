@@ -54,10 +54,10 @@ typedef struct PCB {
   int runtime;
   int switchedtime;
   int wakeuptime;
-  int sleeptime;
+  int sleeptime;      //The time at which the process went to sleep
   int priority;
   double estcpu;
-  int numQuanta;
+  int numQuanta;      //number of quanta process has run
   int basePriority;
   int autowake;
   int yielding;
@@ -107,7 +107,7 @@ int GetPidFromAddress(PCB *pcb);
 
 void ProcessUserSleep(int seconds);
 void ProcessYield();
-void ProcessRecallcPriority(PCB * pcb);
+void ProcessRecalcPriority(PCB * pcb);
 int WhichQueue(PCB * pcb);
 int ProcessInsertRunning(PCB * pcb);
 void ProcessDecayEstcpu(PCB * pcb);
@@ -117,8 +117,6 @@ void ProcessDecayAllEstcpus();
 void ProcessFixRunQueues();
 int ProcessCountAutowake();
 void ProcessPrintRunQueues();
-void ProcessIdle();
-void ProcessForkIdle();
 
 
 #endif	/* __process_h__ */

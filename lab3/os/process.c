@@ -84,6 +84,11 @@ int WhichQueue(PCB * pcb){
 //  move pcb to the back of the runQueue
 //----------------------------------------------------------------------
 int ProcessInsertRunning(PCB * pcb){
+  if ((pcb->l = AQueueAllocLink(pcb)) == NULL) {
+    printf("FATAL ERROR: could not get link for forked PCB in ProcessFork!\n");
+    exitsim();
+  }
+
   if (AQueueInsertLast(&runQueue[WhichQueue(pcb)],pcb->l) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not insert link into runQueue in ProcessInsertRunning");
     exitsim();
@@ -416,11 +421,6 @@ void ProcessSchedule () {
       exitsim();
     }
   }
-
-  //Update current PCB prioirty, estcpu, quantacount
-  //how to update quantacount?
-
-
   // The OS exits if there's no runnable process.  This is a feature, not a
   // bug.  An easy solution to allowing no runnable "user" processes is to
   // have an "idle" process that's simply an infinite loop.
@@ -439,8 +439,39 @@ void ProcessSchedule () {
     exitsim ();	// NEVER RETURNS
   }
 
-  // Move the front of the queue to the end.  The running process was the one in front.
-  AQueueMoveAfter(&runQueue, AQueueLast(&runQueue), AQueueFirst(&runQueue));
+
+  //Update current PCB prioirty, estcpu, quantacount
+  //This is called at every context switch(.01 sec or 10 jiffies)
+  if(currentPCB->flag & PROCESS_STATUS_RUNNABLE){
+
+    //Handle Yield condition
+    if(currentPCB->yielding == 1){
+      //Push current process to end of runQueue
+      int currPCBQueue = WhichQueue(currentPCB)
+      AQueueMoveAfter(&runQueue[currPCBQueue], AQueueLast(&runQueue[currPCBQueue], currentPCB->l));
+      //Do not update estcpu or priority
+
+      //Reset Yielding Flag
+      currentPCB->yielding = 0;
+
+    }
+
+    //CurrentPCB used too much time, time for another process to run
+    else{ //CurrentPCB is not yielding and used a whole CPU window(assume 10 jiffies passed). 
+      //Temporarily move currentPCB out of the RunQueue
+      AQueueRemove(&currentPCB->l);
+
+      //Increment the currentPCB estcpu
+      currentPCB->estcpu += 1.0;
+
+      //recalculate the priority
+      ProcessRecalcPriority(currentPCB);
+
+      //Move the currentPCB to the new runqueue
+      //NOTE: Do not fix the the whole RunQueue
+      ProcessInsertRunning(currentPCB); //Function moves currentPCB to back of the runQueue
+    }
+ 
 
   // Now, run the one at the head of the queue.
   pcb = (PCB *)AQueueObject(AQueueFirst(&runQueue));
@@ -662,6 +693,7 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
   if(func == ProcessIdle){
     pcb->priority=127;
     pcb->idle = 1;
+    pcb->basePriority = 127;
   }
   else{
     pcb->idle =0;
@@ -675,8 +707,6 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
   pcb->pinfo = pinfo;
   pcb->pnice = pnice;
   
-  //Place pcb onto runQueue
-  ProcessInsertRunning(pcb);
 
   //----------------------------------------------------------------------
   // This section initializes the memory for this process
@@ -825,7 +855,7 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
     printf("FATAL ERROR: could not get link for forked PCB in ProcessFork!\n");
     exitsim();
   }
-  if (AQueueInsertLast(&runQueue, pcb->l) != QUEUE_SUCCESS) {
+  if (AQueueInsertLast(&runQueue[WhichQueue(pcb)], pcb->l) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not insert link into runQueue in ProcessFork!\n");
     exitsim();
   }
