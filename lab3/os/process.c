@@ -405,12 +405,12 @@ void ProcessSchedule () {
   //if pinfo -> print PCB runtime
   //TODO: ask how to print runtime
   if (currentPCB->pinfo) {
-  	printf(PROCESS_CPUSTATS_FORMAT, GetCurrentPid(), currentPCB->runtime, 0);
+  	printf(PROCESS_CPUSTATS_FORMAT, GetCurrentPid(), currentPCB->runtime, currentPCB->priority);
   }
   
   //TODO: check if highest priority pcb is the idlePCB
- /* pcb = ProcessFindHighestPriorityPCB();
-  if (pcb == idlePCB) {
+  pcb = ProcessFindHighestPriorityPCB();
+  if (pcb-> == 1) {
   	//check if there is auto-awake process. exitsim for none
 	
 	
