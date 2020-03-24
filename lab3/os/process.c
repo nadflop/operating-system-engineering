@@ -520,11 +520,15 @@ void ProcessWakeup (PCB *wakeup) {
     exitsim();
   }
 
+  //Reset PCB autowake flag
+  wakeup->autowake = 0;
+
   //Decay the estcpu based off of the amount of time asleep
-
-
+  int time_asleep_jiffies = ClkGetCurJiffies() - wakeup->sleeptime;
+  ProcessDecayEstcpuSleep(wakeup, time_asleep_jiffies);
+  
   //Recalculate the priority
-
+  ProcessRecalcPriority(wakeup);
 
   //Place the link in the correct RunQueue
   if (AQueueInsertLast(&runQueue, wakeup->l) != QUEUE_SUCCESS) {
