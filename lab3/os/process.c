@@ -408,14 +408,17 @@ void ProcessSchedule () {
   	printf(PROCESS_CPUSTATS_FORMAT, GetCurrentPid(), currentPCB->runtime, currentPCB->priority);
   }
   
-  //TODO: check if highest priority pcb is the idlePCB
+  //Check if highest priority pcb is the idlePCB
   pcb = ProcessFindHighestPriorityPCB();
-  if (pcb-> == 1) {
-  	//check if there is auto-awake process. exitsim for none
-	
-	
+  if (pcb->idle == 1) {
+    if(ProcessCountAutowake() == 0){
+      exitsim();
+    }
   }
-*/
+
+  //Update current PCB prioirty, estcpu, quantacount
+  ProcessDecayEstcpu
+
   // The OS exits if there's no runnable process.  This is a feature, not a
   // bug.  An easy solution to allowing no runnable "user" processes is to
   // have an "idle" process that's simply an infinite loop.
