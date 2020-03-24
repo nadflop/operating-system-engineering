@@ -21,6 +21,7 @@
 // Pointer to the current PCB.  This is used by the assembly language
 // routines for context switches.
 PCB		*currentPCB;
+PCB   *idlePCB;
 
 // List of free PCBs.
 static Queue	freepcbs;
@@ -1261,8 +1262,7 @@ void ProcessIdle() {
 void ProcessForkIdle(){
  int i;
  Link *link;
-
- tempPCB = &pcbs[ProcessFork(ProcessIdle, (uint32)NULL, 0, 0, "IDLE PROCESS", 0)];
- tempPCB->basePriority = MAX_PRIORITY;
+ idlePCB = &pcbs[ProcessFork(ProcessIdle, (uint32)NULL, 0, 0, "IDLE PROCESS", 0)];
+ idlePCB->basePriority = MAX_PRIORITY;
  //TODO: STILL NEED TO FIX THIS
 }
