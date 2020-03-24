@@ -417,7 +417,8 @@ void ProcessSchedule () {
   }
 
   //Update current PCB prioirty, estcpu, quantacount
-  ProcessDecayEstcpu
+  //how to update quantacount?
+
 
   // The OS exits if there's no runnable process.  This is a feature, not a
   // bug.  An easy solution to allowing no runnable "user" processes is to
@@ -1230,7 +1231,10 @@ int GetPidFromAddress(PCB *pcb) {
 // followed by a call to ProcessSchedule (in traps.c).
 //--------------------------------------------------------
 void ProcessUserSleep(int seconds) {
-  // Your code here
+ currentPCB->sleeptime = ClkGetCurJiffies();
+ cuurentPCB->wakeuptime = seconds * CLOCK_PROCESS_JIFFIES;
+ currentPCB->autowake = 1;
+ ProcessSuspend(currentPCB);
 }
 
 //-----------------------------------------------------
@@ -1239,5 +1243,26 @@ void ProcessUserSleep(int seconds) {
 // ProcessSchedule (in traps.c).
 //-----------------------------------------------------
 void ProcessYield() {
-  // Your code here
+  currentPCB->yielding = 1;
+}
+
+//-----------------------------------------------------
+// ProcessIdle simply creates an idle process
+//-----------------------------------------------------
+void ProcessIdle() {
+  while(1);
+}
+
+//-----------------------------------------------------
+// ProcessForkIdle simply fork ProcessIdle and 
+// loop through last run queue and find pcb
+// if pcb is idle, set it as idlePCB
+//-----------------------------------------------------
+void ProcessForkIdle(){
+ int i;
+ Link *link;
+
+ tempPCB = &pcbs[ProcessFork(ProcessIdle, (uint32)NULL, 0, 0, "IDLE PROCESS", 0)];
+ tempPCB->basePriority = MAX_PRIORITY;
+ //TODO: STILL NEED TO FIX THIS
 }
