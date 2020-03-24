@@ -400,7 +400,7 @@ void ProcessSchedule () {
   dbprintf ('p', "Now entering ProcessSchedule (cur=0x%x, %d ready)\n",
 	    (int)currentPCB, AQueueLength (&runQueue));
   //update current PCB runtime (cumulative)
-  currentPCB->runtime += (ClkGetCurJiffies() * 0.01) - currentPCB->switchedtime;
+  currentPCB->runtime += (ClkGetCurJiffies()) - currentPCB->switchedtime;
 
   //if pinfo -> print PCB runtime
   //TODO: ask how to print runtime
@@ -507,14 +507,26 @@ void ProcessWakeup (PCB *wakeup) {
   // Make sure it's not yet a runnable process.
   ASSERT (wakeup->flags & PROCESS_STATUS_WAITING, "Trying to wake up a non-sleeping process!\n");
   ProcessSetStatus (wakeup, PROCESS_STATUS_RUNNABLE);
+
+  //Remove link of PCB from the waitQueue
   if (AQueueRemove(&(wakeup->l)) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not remove wakeup PCB from waitQueue in ProcessWakeup!\n");
     exitsim();
   }
+
+  //Create a link with the PCB as the object
   if ((wakeup->l = AQueueAllocLink(wakeup)) == NULL) {
     printf("FATAL ERROR: could not get link for wakeup PCB in ProcessWakeup!\n");
     exitsim();
   }
+
+  //Decay the estcpu based off of the amount of time asleep
+
+
+  //Recalculate the priority
+
+
+  //Place the link in the correct RunQueue
   if (AQueueInsertLast(&runQueue, wakeup->l) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not insert link into runQueue in ProcessWakeup!\n");
     exitsim();
