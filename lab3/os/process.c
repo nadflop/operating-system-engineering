@@ -609,6 +609,7 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
   uint32 dum[MAX_ARGS+8], count, offset;
   char *str;
 
+
   dbprintf ('p', "ProcessFork (%d): function started\n", GetCurrentPid());
   intrs = DisableIntrs ();
   dbprintf ('I', "Old interrupt value was 0x%x.\n", intrs);
@@ -638,6 +639,39 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
   // Copy the process name into the PCB.
   dbprintf('p', "ProcessFork: Copying process name (%s) to pcb\n", name);
   dstrcpy(pcb->name, name);
+
+  //Init PCB attributes
+  pcb->runtime = 0;
+  pcb->switchedtime = 0;
+  pcb->wakeuptime =0;
+  pcb->sleeptime=0;
+  if (isUser == 1){
+    pcb->priority = MIN_PRORITY;
+    pcb->basePriority = MIN_PRORITY;
+  }
+  else{
+    pcb->priority = 0;
+    pcb->basePriority = 0;
+  }
+
+  if(func == ProcessIdle){
+    pcb->priority=127;
+    pcb->idle = 1;
+  }
+  else{
+    pcb->idle =0;
+  }
+
+  pcb->estcpu = 0;
+  pcb->numQuanta = 0;
+  pcb->autowake = 0;
+  pcb->yielding = 0;
+
+  pcb->pinfo = pinfo;
+  pcb->pnice = pnice;
+  
+  //Place pcb onto runQueue
+  ProcessInsertRunning(pcb);
 
   //----------------------------------------------------------------------
   // This section initializes the memory for this process
