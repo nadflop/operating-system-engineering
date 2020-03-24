@@ -44,6 +44,9 @@ static Queue	zombieQueue;
 // we can't use malloc() inside the OS.
 static PCB	pcbs[PROCESS_MAX_PROCS];
 
+//This stores the time(in Jiffies) that ProcessSchedule last performed a decay 
+static int lastDecayTime = 0;
+
 // String listing debugging options to print out.
 char	debugstr[200];
 
@@ -439,27 +442,24 @@ void ProcessSchedule () {
     exitsim ();	// NEVER RETURNS
   }
 
-
-  //Update current PCB prioirty, estcpu, quantacount
+  //______CURRENT_PCB_FOR_CONTEXT_SWITCHING_AND_YIELDING________
   //This is called at every context switch(.01 sec or 10 jiffies)
   if(currentPCB->flag & PROCESS_STATUS_RUNNABLE){
+    //Temp remove the currentPCB from the runQueue
+    AQueueRemove(&currentPCB->l);
 
-    //Handle Yield condition
+    //HANDLE YIELD CONDITION
     if(currentPCB->yielding == 1){
-      //Push current process to end of runQueue
-      int currPCBQueue = WhichQueue(currentPCB)
-      AQueueMoveAfter(&runQueue[currPCBQueue], AQueueLast(&runQueue[currPCBQueue], currentPCB->l));
       //Do not update estcpu or priority
-
       //Reset Yielding Flag
       currentPCB->yielding = 0;
 
+      //This will get pushed to the back of its current runQueue cuz the prioirty doesn't change
     }
 
-    //CurrentPCB used too much time, time for another process to run
+    //CURRENTPCB USED TOO MUCH TIME, TIME FOR ANOTHER PROCESS TO RUN
     else{ //CurrentPCB is not yielding and used a whole CPU window(assume 10 jiffies passed). 
       //Temporarily move currentPCB out of the RunQueue
-      AQueueRemove(&currentPCB->l);
 
       //Increment the currentPCB estcpu
       currentPCB->estcpu += 1.0;
@@ -469,9 +469,29 @@ void ProcessSchedule () {
 
       //Move the currentPCB to the new runqueue
       //NOTE: Do not fix the the whole RunQueue
-      ProcessInsertRunning(currentPCB); //Function moves currentPCB to back of the runQueue
+      //NOTE: Since the priority may have changed, the runQueue the PCB belongs in may change
     }
- 
+    ProcessInsertRunning(currentPCB); //Function moves currentPCB to back of the runQueue
+  }
+  //__________________________________________________________________
+
+
+  //_________________ESTCPU_DECAY_HANLDING_____________________
+  //This block handles the decay for all processes in the RunQueue
+  //Decaying occurs every .1 sec or 100 jiffies
+
+  //Enter into block every 100 jiffies
+  if(ClkGetCurJiffies() - lastDecayTime >= DECAY_WINDOW_JIFFES){
+      //Decay all processes in the RunQueue
+
+      //Recalculate the priorities
+
+      //Fix the RunQueue
+
+      //Reset the lastDecayTime
+      lastDecayTime = ClkGetCurJiffies();
+  }
+  //__________________________________________________________________
 
   // Now, run the one at the head of the queue.
   pcb = (PCB *)AQueueObject(AQueueFirst(&runQueue));

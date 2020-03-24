@@ -34,7 +34,7 @@
 #define MAX_PRIORITY 127 //Maximum priority for the user
 #define PRIORITIES_PER_QUEUE 4
 #define NUM_QUEUE 32 
-#define NUM_JIFFIES 100 //number of jiffies until estcpu decay
+#define DECAY_WINDOW_JIFFIES 100 //number of jiffies until estcpu decay
 
 typedef	void (*VoidFunc)();
 
