@@ -274,7 +274,9 @@ void ProcessModuleInit () {
 
   dbprintf ('p', "ProcessModuleInit: function started\n");
   AQueueInit (&freepcbs);
-  AQueueInit(&runQueue);
+  for (i = 0; i < NUM_QUEUE; i++) {
+  	AQueueInit(&runQueue[i]);
+  }
   AQueueInit (&waitQueue);
   AQueueInit (&zombieQueue);
   // For each PCB slot in the global pcbs array:
@@ -413,7 +415,7 @@ void ProcessSchedule () {
   PCB *hpPCB = NULL; //The PCB with highest priority
 
   dbprintf ('p', "Now entering ProcessSchedule (cur=0x%x, %d ready)\n",
-	    (int)currentPCB, AQueueLength (&runQueue));
+	    (int)currentPCB, AQueueLength ((currentPCB->l)->queue));
   //update current PCB runtime (cumulative)
   currentPCB->runtime += (ClkGetCurJiffies()) - currentPCB->switchedtime;
 
