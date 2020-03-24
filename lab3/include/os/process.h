@@ -117,6 +117,8 @@ void ProcessDecayAllEstcpus();
 void ProcessFixRunQueues();
 int ProcessCountAutowake();
 void ProcessPrintRunQueues();
+void ProcessIdle();
+void ProcessForkIdle();
 
 
 #endif	/* __process_h__ */
