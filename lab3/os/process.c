@@ -176,10 +176,10 @@ void ProcessDecayAllEstcpus(){
   }
 }
 //----------------------------------------------------------------------
-//	ProcessFixRunQueue
+//	ProcessFixRunQueues
 //     input: None
 //     return: void
-//     Clear the runqueue and re-assign processes to theq queue
+//     Clear the runqueue and re-assign processes to the queue
 //     based off of the calculated priorities
 //
 //
@@ -404,7 +404,13 @@ void ProcessSetResult (PCB * pcb, uint32 result) {
 void ProcessSchedule () {
   PCB *pcb=NULL;
   int i=0;
-  Link *l=NULL; 
+  Link *l=NULL;
+
+
+  Link *waitLink = NULL;
+  PCB *waitPCB = NULL;  
+
+  PCB *hpPCB = NULL; //The PCB with highest priority
 
   dbprintf ('p', "Now entering ProcessSchedule (cur=0x%x, %d ready)\n",
 	    (int)currentPCB, AQueueLength (&runQueue));
@@ -446,7 +452,7 @@ void ProcessSchedule () {
   //This is called at every context switch(.01 sec or 10 jiffies)
   if(currentPCB->flag & PROCESS_STATUS_RUNNABLE){
     //Temp remove the currentPCB from the runQueue
-    AQueueRemove(&currentPCB->l);
+    AQueueRemove(&(currentPCB->l));
 
     //HANDLE YIELD CONDITION
     if(currentPCB->yielding == 1){
@@ -482,22 +488,65 @@ void ProcessSchedule () {
 
   //Enter into block every 100 jiffies
   if(ClkGetCurJiffies() - lastDecayTime >= DECAY_WINDOW_JIFFES){
-      //Decay all processes in the RunQueue
-
-      //Recalculate the priorities
+      //Decay all processes in the RunQueue and recalc priorities
+      ProcessDecayAllEstcpus();
 
       //Fix the RunQueue
+      ProcessFixRunQueues();
 
       //Reset the lastDecayTime
       lastDecayTime = ClkGetCurJiffies();
   }
   //__________________________________________________________________
 
+
+  //___________________WAKEUP_SLEEPING_PROCESSES______________________
+  if(ProcessCountAutowake()>=1){
+    link = AQueueFirst(&waitQueue);
+
+    //Traverse throught the waitQueue and wakeup processes that are ready
+    while(link != NULL){
+      waitPCB =(PCB *)AQueueObject(link);
+
+      //Check if PCB has the autowake flag high
+      if(waitPCB->autowake == 1){
+
+        //Check if process has slept long enough
+        //NOTE: wakeup time is calculated by proce
+        if(ClkGetCurJiffies()>= waitPCB->wakeuptime){
+          ProcessWakeup(waitPCB); //wakeup the process
+        }
+      }
+      AQueueNext(link);
+    }
+
+  }
+  //__________________________________________________________________
+
+
+  //______________________GET_NEW_PCB_TO_RUN__________________________
+  //Block is called at each context switch
+  hpPCB = ProcessFindHighestPriorityPCB();
+  if(currentPCB == hpPCB){
+    AQueueRemove(&(hpPCB->l));
+    ProcessInsertRunning(hpPCB);
+    hpPCB = ProcessFindHighestPriorityPCB();
+  }
+  currentPCB = hpPCB;
+  //__________________________________________________________________
+
+
+
+
+
+
+/*
   // Now, run the one at the head of the queue.
   pcb = (PCB *)AQueueObject(AQueueFirst(&runQueue));
   currentPCB = pcb;
   dbprintf ('p',"About to switch to PCB 0x%x,flags=0x%x @ 0x%x\n",
 	    (int)pcb, pcb->flags, (int)(pcb->sysStackPtr[PROCESS_STACK_IAR]));
+*/
 
   // Clean up zombie processes here.  This is done at interrupt time
   // because it can't be done while the process might still be running
@@ -511,6 +560,8 @@ void ProcessSchedule () {
     ProcessFreeResources(pcb);
   }
   dbprintf ('p', "Leaving ProcessSchedule (cur=0x%x)\n", (int)currentPCB);
+
+  currentPCB->switchedtime = ClkGetCurJiffies();
 }
 
 //----------------------------------------------------------------------
@@ -1283,7 +1334,7 @@ int GetPidFromAddress(PCB *pcb) {
 //--------------------------------------------------------
 void ProcessUserSleep(int seconds) {
  currentPCB->sleeptime = ClkGetCurJiffies();
- cuurentPCB->wakeuptime = seconds * CLOCK_PROCESS_JIFFIES;
+ cuurentPCB->wakeuptime = CurrentPCB->sleeptime + seconds * CLOCK_PROCESS_JIFFIES;
  currentPCB->autowake = 1;
  ProcessSuspend(currentPCB);
 }
