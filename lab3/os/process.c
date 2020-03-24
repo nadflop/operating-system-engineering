@@ -45,7 +45,7 @@ static Queue	zombieQueue;
 static PCB	pcbs[PROCESS_MAX_PROCS];
 
 //This stores the time(in Jiffies) that ProcessSchedule last performed a decay 
-static int lastDecayTime = 0;
+static int lastDecayTime;
 
 // String listing debugging options to print out.
 char	debugstr[200];
@@ -1257,9 +1257,13 @@ void main (int argc, char *argv[])
     dbprintf('i', "No user program passed!\n");
   }
 
+  //Initialize the idle process and the last decay time
+  ProcessForkIdle();
+  lastDecayTime= 0;
+  
   // Start the clock which will in turn trigger periodic ProcessSchedule's
   ClkStart();
-
+  
   intrreturn ();
   // Should never be called because the scheduler exits when there
   // are no runnable processes left.
