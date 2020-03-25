@@ -14,4 +14,4 @@ clean:
 	cd reaction2; make clean
 	cd reaction3; make clean
 run:
-	cd ../../bin; dlxsim -x os.dlx.obj -a -u makeprocs.dlx.obj 1 12; ee469_fixterminal
+	cd ../../bin; dlxsim -x os.dlx.obj -a -u makeprocs.dlx.obj 1 4; ee469_fixterminal

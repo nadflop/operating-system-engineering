@@ -382,6 +382,18 @@ void ProcessSetResult (PCB * pcb, uint32 result) {
 }
 
 
+int ProcessCheckRunQueue() {
+  int i = 0;
+  Queue* currQueue = NULL;
+  for(i = 0; i < NUM_QUEUE; i++) {
+    currQueue = &runQueue[i];
+    if(AQueueLength(currQueue)) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 //----------------------------------------------------------------------
 //
 //	ProcessSchedule
@@ -405,9 +417,9 @@ void ProcessSetResult (PCB * pcb, uint32 result) {
 //----------------------------------------------------------------------
 void ProcessSchedule () {
   PCB *pcb=NULL;
+
   int i=0;
   Link *l=NULL;
-
 
   Link *waitLink = NULL;
   PCB *waitPCB = NULL;  
@@ -427,11 +439,30 @@ void ProcessSchedule () {
   
   //Check if highest priority pcb is the idlePCB
   pcb = ProcessFindHighestPriorityPCB();
-  if (pcb->idle == 1) {
+  if(ProcessCheckRunQueue() == 0 || hpPCB == idlePCB){
     if(ProcessCountAutowake() == 0){
-      exitsim();
+      if (!AQueueEmpty(&waitQueue)) {
+        printf("FATAL ERROR: no runnable processes, but there are sleeping processes waiting!\n");
+        l = AQueueFirst(&waitQueue);
+        while (l != NULL) {
+          pcb = AQueueObject(l);
+          printf("Sleeping process %d: ", i++); printf("PID = %d\n", (int)(pcb - pcbs));
+          l = AQueueNext(l);
+          exitsim();
+        }
+        printf ("No runnable processes - exiting!\n");
+        exitsim();
+      }
     }
   }
+  //if (pcb->idle == 1) {
+  //   if(ProcessCountAutowake() == 0){
+  //     printf("FATAL ERROR: no runnable processes, but there are sleeping processes waiting!\n");
+  //     exitsim();
+  //   }
+  // }
+
+
   // The OS exits if there's no runnable process.  This is a feature, not a
   // bug.  An easy solution to allowing no runnable "user" processes is to
   // have an "idle" process that's simply an infinite loop.
@@ -452,7 +483,7 @@ void ProcessSchedule () {
 
   //______CURRENT_PCB_FOR_CONTEXT_SWITCHING_AND_YIELDING________
   //This is called at every context switch(.01 sec or 10 jiffies)
-  if(currentPCB->flag & PROCESS_STATUS_RUNNABLE){
+  if(currentPCB->flags & PROCESS_STATUS_RUNNABLE){
     //Temp remove the currentPCB from the runQueue
     AQueueRemove(&(currentPCB->l));
 
@@ -489,7 +520,7 @@ void ProcessSchedule () {
   //Decaying occurs every .1 sec or 100 jiffies
 
   //Enter into block every 100 jiffies
-  if(ClkGetCurJiffies() - lastDecayTime >= DECAY_WINDOW_JIFFES){
+  if(ClkGetCurJiffies() - lastDecayTime >= DECAY_WINDOW_JIFFIES){
       //Decay all processes in the RunQueue and recalc priorities
       ProcessDecayAllEstcpus();
 
@@ -504,11 +535,11 @@ void ProcessSchedule () {
 
   //___________________WAKEUP_SLEEPING_PROCESSES______________________
   if(ProcessCountAutowake()>=1){
-    link = AQueueFirst(&waitQueue);
+    waitLink = AQueueFirst(&waitQueue);
 
     //Traverse throught the waitQueue and wakeup processes that are ready
-    while(link != NULL){
-      waitPCB =(PCB *)AQueueObject(link);
+    while(waitLink != NULL){
+      waitPCB =(PCB *)AQueueObject(waitLink);
 
       //Check if PCB has the autowake flag high
       if(waitPCB->autowake == 1){
@@ -519,9 +550,8 @@ void ProcessSchedule () {
           ProcessWakeup(waitPCB); //wakeup the process
         }
       }
-      AQueueNext(link);
+      AQueueNext(waitLink);
     }
-
   }
   //__________________________________________________________________
 
@@ -612,6 +642,8 @@ void ProcessSuspend (PCB *suspend) {
 //
 //----------------------------------------------------------------------
 void ProcessWakeup (PCB *wakeup) {
+  int time_asleep_jiffies;
+
   dbprintf ('p',"Waking up PID %d.\n", (int)(wakeup - pcbs));
   // Make sure it's not yet a runnable process.
   ASSERT (wakeup->flags & PROCESS_STATUS_WAITING, "Trying to wake up a non-sleeping process!\n");
@@ -623,27 +655,28 @@ void ProcessWakeup (PCB *wakeup) {
     exitsim();
   }
 
-  //Create a link with the PCB as the object
-  if ((wakeup->l = AQueueAllocLink(wakeup)) == NULL) {
-    printf("FATAL ERROR: could not get link for wakeup PCB in ProcessWakeup!\n");
-    exitsim();
-  }
+  // //Create a link with the PCB as the object
+  // if ((wakeup->l = AQueueAllocLink(wakeup)) == NULL) {
+  //   printf("FATAL ERROR: could not get link for wakeup PCB in ProcessWakeup!\n");
+  //   exitsim();
+  // }
 
   //Reset PCB autowake flag
   wakeup->autowake = 0;
 
   //Decay the estcpu based off of the amount of time asleep
-  int time_asleep_jiffies = ClkGetCurJiffies() - wakeup->sleeptime;
+  time_asleep_jiffies = ClkGetCurJiffies() - wakeup->sleeptime;
   ProcessDecayEstcpuSleep(wakeup, time_asleep_jiffies);
   
   //Recalculate the priority
   ProcessRecalcPriority(wakeup);
 
   //Place the link in the correct RunQueue
-  if (AQueueInsertLast(&runQueue, wakeup->l) != QUEUE_SUCCESS) {
-    printf("FATAL ERROR: could not insert link into runQueue in ProcessWakeup!\n");
-    exitsim();
-  }
+  ProcessInsertRunning(wakeup);
+  // if (AQueueInsertLast(&runQueue[WhichQueue(wakeup), wakeup->l) != QUEUE_SUCCESS) {
+  //   printf("FATAL ERROR: could not insert link into runQueue in ProcessWakeup!\n");
+  //   exitsim();
+  // }
 }
 
 
@@ -691,7 +724,13 @@ static void ProcessExit () {
   exit ();
 }
 
-
+//-----------------------------------------------------
+// ProcessIdle simply creates an idle process
+//-----------------------------------------------------
+void ProcessIdle() {
+  while(1);
+}
+
 //----------------------------------------------------------------------
 //
 //	ProcessFork
@@ -1123,7 +1162,39 @@ ProcessGetFromFile (int fd, unsigned char *buf, uint32 *addr, int max)
 	    (int)(seekpos + lpos - localbuf), nbytes);
   return (nbytes);
 }
-
+
+//--------------------------------------------------------
+// ProcessSleep assumes that it will be immediately 
+// followed by a call to ProcessSchedule (in traps.c).
+//--------------------------------------------------------
+void ProcessUserSleep(int seconds) {
+ currentPCB->sleeptime = ClkGetCurJiffies();
+ currentPCB->wakeuptime = currentPCB->sleeptime + seconds * CLOCK_PROCESS_JIFFIES;
+ currentPCB->autowake = 1;
+ ProcessSuspend(currentPCB);
+}
+
+//-----------------------------------------------------
+// ProcessYield simply marks the currentPCB as yielding.
+// This should immediately be followed by a call to
+// ProcessSchedule (in traps.c).
+//-----------------------------------------------------
+void ProcessYield() {
+  currentPCB->yielding = 1;
+}
+
+
+//-----------------------------------------------------
+// ProcessForkIdle simply fork ProcessIdle and 
+// loop through last run queue and find pcb
+// if pcb is idle, set it as idlePCB
+//-----------------------------------------------------
+void ProcessForkIdle(){
+ idlePCB = &pcbs[ProcessFork(ProcessIdle, (uint32)NULL, 0, 0, "IDLE PROCESS", 0)];
+ idlePCB->basePriority = MAX_PRIORITY;
+ //TODO: STILL NEED TO FIX THIS
+}
+
 //----------------------------------------------------------------------
 //
 //	main
@@ -1334,42 +1405,3 @@ int GetPidFromAddress(PCB *pcb) {
   return (int)(pcb - pcbs);
 }
 
-//--------------------------------------------------------
-// ProcessSleep assumes that it will be immediately 
-// followed by a call to ProcessSchedule (in traps.c).
-//--------------------------------------------------------
-void ProcessUserSleep(int seconds) {
- currentPCB->sleeptime = ClkGetCurJiffies();
- cuurentPCB->wakeuptime = CurrentPCB->sleeptime + seconds * CLOCK_PROCESS_JIFFIES;
- currentPCB->autowake = 1;
- ProcessSuspend(currentPCB);
-}
-
-//-----------------------------------------------------
-// ProcessYield simply marks the currentPCB as yielding.
-// This should immediately be followed by a call to
-// ProcessSchedule (in traps.c).
-//-----------------------------------------------------
-void ProcessYield() {
-  currentPCB->yielding = 1;
-}
-
-//-----------------------------------------------------
-// ProcessIdle simply creates an idle process
-//-----------------------------------------------------
-void ProcessIdle() {
-  while(1);
-}
-
-//-----------------------------------------------------
-// ProcessForkIdle simply fork ProcessIdle and 
-// loop through last run queue and find pcb
-// if pcb is idle, set it as idlePCB
-//-----------------------------------------------------
-void ProcessForkIdle(){
- int i;
- Link *link;
- idlePCB = &pcbs[ProcessFork(ProcessIdle, (uint32)NULL, 0, 0, "IDLE PROCESS", 0)];
- idlePCB->basePriority = MAX_PRIORITY;
- //TODO: STILL NEED TO FIX THIS
-}
