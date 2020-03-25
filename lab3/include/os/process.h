@@ -35,7 +35,7 @@
 #define PRIORITIES_PER_QUEUE 4
 #define NUM_QUEUE 32 
 #define DECAY_WINDOW_JIFFIES 100 //number of jiffies until estcpu decay
-
+#define CPU_WINDOWS_BETWEEN_DECAYS 10
 typedef	void (*VoidFunc)();
 
 // Process control block
@@ -52,8 +52,8 @@ typedef struct PCB {
   int           pinfo;          // Turns on printing of runtime stats
   int           pnice;          // Used in priority calculation
   int runtime;
-  int switchedtime;
-  int wakeuptime;
+  int switchedtime;   //The time at which
+  int wakeuptime;     //The time
   int sleeptime;      //The time at which the process went to sleep
   int priority;
   double estcpu;

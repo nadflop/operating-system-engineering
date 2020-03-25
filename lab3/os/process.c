@@ -521,6 +521,10 @@ void ProcessSchedule () {
 
   //Enter into block every 100 jiffies
   if(ClkGetCurJiffies() - lastDecayTime >= DECAY_WINDOW_JIFFIES){
+    
+      if(currentPCB->runtime > CPU_WINDOWS_BETWEEN_DECAYS){
+        currentPCB->estcpu += 1.0;
+      }
       //Decay all processes in the RunQueue and recalc priorities
       ProcessDecayAllEstcpus();
 
