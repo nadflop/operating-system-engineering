@@ -198,7 +198,7 @@ void ProcessFixRunQueues(){
 
       while(link != NULL){
         //Check if current process belongs in current RunQueue
-        if (WhichQueue(link->object) != i){
+        if (WhichQueue((PCB *)AQueueObject(link)) != i){
 
           //Remove link from current Queue
           if(AQueueRemove(&link)!=QUEUE_SUCCESS){
@@ -206,10 +206,11 @@ void ProcessFixRunQueues(){
           }
 
           //Push link to the end of the proper queue
-          runQueueNum = WhichQueue((PCB *)AQueueObject(link));
-          if(AQueueInsertLast(&runQueue[runQueueNum], link)){
-            printf("Fatal Error: Link could not be inserted into new run queue");
-          }
+          ProcessInsertRunning((PCB *)AQueueObject(link));
+          // runQueueNum = WhichQueue((PCB *)AQueueObject(link));
+          // if(AQueueInsertLast(&runQueue[runQueueNum], link)){
+          //   printf("Fatal Error: Link could not be inserted into new run queue");
+          // }
         }
         link = AQueueNext(link);
       }
@@ -242,23 +243,35 @@ int ProcessCountAutowake(){
 void ProcessPrintRunQueues(){
   int i;
   Link *link; //First link of the runQueue
-
-  printf("Print RunQueues\n");
+  printf("\tCurrJiffies: %d\n",ClkGetCurJiffies());
+  printf("\tCurrPCB: %d pr:%d\n",currentPCB-pcbs, currentPCB->priority);
+  printf("\tPrint RunQueues\n");
   //Loop through all run queues
   for(i=0;i<NUM_QUEUE; i++){
     //Check if link has processes
-    if(AQueueEmpty(&runQueue[i]) == 0){
-      printf("Queue %d\n\t", i);
+    if(!AQueueEmpty(&runQueue[i])){
+      printf("\t\tQueue %d len %d: ", i, AQueueLength(&runQueue[i]));
       
       //Traverse through runQueue
       link = AQueueFirst(&runQueue[i]);
       while(AQueueNext(link) != NULL){
-        printf("%s->", ((PCB *)AQueueObject(link))->name);
+        printf("(%d pr:%d)--->",  (PCB *)AQueueObject(link)-pcbs, ((PCB *)AQueueObject(link))->priority);
         link = AQueueNext(link);
       }
+      printf("end\n");
     }
-  }  
-  printf("Print End\n");
+  }
+
+  printf("\tPrint waitQueue\n\t\twait: ");
+  //Traverse through waitQueue
+  link = AQueueFirst(&waitQueue);
+  while(AQueueNext(link) != NULL){
+    printf("(%d pr:%d)--->",  (PCB *)AQueueObject(link)-pcbs, ((PCB *)AQueueObject(link))->priority);
+    link = AQueueNext(link);
+  }
+  printf("end\n");
+  
+  printf("\tPrint End\n");
 }
 
 //----------------------------------------------------------------------
@@ -433,19 +446,20 @@ void ProcessSchedule () { //The elephant
 
   //if pinfo -> print PCB runtime
   if (currentPCB->pinfo) {
-  	printf(PROCESS_CPUSTATS_FORMAT, GetCurrentPid(), currentPCB->runtime, currentPCB->priority);
+  	//printf(PROCESS_CPUSTATS_FORMAT, GetCurrentPid(), currentPCB->runtime, currentPCB->priority);
+    ProcessPrintRunQueues();
   }
   
   //Check if highest priority pcb is the idlePCB
-  //hpPCB = ProcessFindHighestPriorityPCB();
-  // if(hpPCB == idlePCB){
-  //   AQueueRemove(&(hpPCB->l));
-  //   ProcessInsertRunning(hpPCB);
-  //   currentPCB= ProcessFindHighestPriorityPCB();
-  //   if(ProcessCountAutowake() == 0){
-  //     exitsim();
-  //   }
-  // }
+  hpPCB = ProcessFindHighestPriorityPCB();
+  if(hpPCB == idlePCB){
+    AQueueRemove(&(hpPCB->l));
+    ProcessInsertRunning(hpPCB);
+    currentPCB= ProcessFindHighestPriorityPCB();
+    if(ProcessCountAutowake() == 0){
+      exitsim();
+    }
+  }
   if(ProcessCheckRunQueue() == 0){
       if (!AQueueEmpty(&waitQueue)) {
         printf("FATAL ERROR: no runnable processes, but there are sleeping processes waiting!\n");
@@ -490,9 +504,6 @@ void ProcessSchedule () { //The elephant
   //This is called at every context switch(.01 sec or 10 jiffies)
   if(currentPCB->flags & PROCESS_STATUS_RUNNABLE){
     //Temp remove the currentPCB from the runQueue
-    if (currentPCB->l != NULL){
-      AQueueRemove(&(currentPCB->l));
-    }
 
     //HANDLE YIELD CONDITION
     if(currentPCB->yielding == 1){
@@ -520,6 +531,9 @@ void ProcessSchedule () { //The elephant
       //NOTE: Do not fix the the whole RunQueue
       //NOTE: Since the priority may have changed, the runQueue the PCB belongs in may change
     }
+    if (currentPCB->l != NULL){
+      AQueueRemove(&(currentPCB->l));
+    }
     ProcessInsertRunning(currentPCB); //Function moves currentPCB to back of the runQueue
   }
   //__________________________________________________________________
@@ -539,7 +553,7 @@ void ProcessSchedule () { //The elephant
       ProcessFixRunQueues();
 
       //Reset the lastDecayTime
-      lastDecayTime += ClkGetCurJiffies();
+      lastDecayTime = ClkGetCurJiffies() + DECAY_WINDOW_JIFFIES;
   }
   //__________________________________________________________________
 
@@ -662,12 +676,12 @@ void ProcessWakeup (PCB *wakeup) {
   ProcessSetStatus (wakeup, PROCESS_STATUS_RUNNABLE);
 
   //Remove link of PCB from the waitQueue
-  if (wakeup->l != NULL){
-    if (AQueueRemove(&(wakeup->l)) != QUEUE_SUCCESS) {
-      printf("FATAL ERROR: could not remove wakeup PCB from waitQueue in ProcessWakeup!\n");
-      exitsim();
-    }
+  
+  if (AQueueRemove(&(wakeup->l)) != QUEUE_SUCCESS) {
+    printf("FATAL ERROR: could not remove wakeup PCB from waitQueue in ProcessWakeup!\n");
+    exitsim();
   }
+  
   // //Create a link with the PCB as the object
   // if ((wakeup->l = AQueueAllocLink(wakeup)) == NULL) {
   //   printf("FATAL ERROR: could not get link for wakeup PCB in ProcessWakeup!\n");
@@ -829,7 +843,7 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
   pcb->autowake = 0;
   pcb->yielding = 0;
 
-  pcb->pinfo = pinfo;
+  pcb->pinfo = 1;
   pcb->pnice = pnice;
   
 
@@ -994,14 +1008,14 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
   if (currentPCB == NULL) {
     dbprintf ('p', "Setting currentPCB=0x%x, stackframe=0x%x\n", (int)pcb, (int)(pcb->currentSavedFrame));
     currentPCB = pcb;
-	currentPCB->switchedtime = ClkGetCurJiffies();
+	  currentPCB->switchedtime = ClkGetCurJiffies();
   }
 
   dbprintf ('p', "Leaving ProcessFork (%s)\n", name);
   // Return the process number (found by subtracting the PCB number
   // from the base of the PCB array).
   dbprintf ('p', "ProcessFork (%d): function complete\n", GetCurrentPid());
-
+  
   return (pcb - pcbs);
 }
 
