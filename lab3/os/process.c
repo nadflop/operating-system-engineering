@@ -438,7 +438,7 @@ void ProcessSchedule () {
   }
   
   //Check if highest priority pcb is the idlePCB
-  pcb = ProcessFindHighestPriorityPCB();
+  hpPCB = ProcessFindHighestPriorityPCB();
   if(ProcessCheckRunQueue() == 0 || hpPCB == idlePCB){
     if(ProcessCountAutowake() == 0){
       if (!AQueueEmpty(&waitQueue)) {
@@ -448,11 +448,11 @@ void ProcessSchedule () {
           pcb = AQueueObject(l);
           printf("Sleeping process %d: ", i++); printf("PID = %d\n", (int)(pcb - pcbs));
           l = AQueueNext(l);
-          exitsim();
         }
-        printf ("No runnable processes - exiting!\n");
-        exitsim();
-      }
+		exitsim();
+      }        
+	  printf ("No runnable processes - exiting!\n");
+      exitsim();
     }
   }
   //if (pcb->idle == 1) {
@@ -466,7 +466,7 @@ void ProcessSchedule () {
   // The OS exits if there's no runnable process.  This is a feature, not a
   // bug.  An easy solution to allowing no runnable "user" processes is to
   // have an "idle" process that's simply an infinite loop.
-  if (AQueueEmpty(&runQueue)) {
+/*  if (AQueueEmpty(&runQueue)) {
     if (!AQueueEmpty(&waitQueue)) {
       printf("FATAL ERROR: no runnable processes, but there are sleeping processes waiting!\n");
       l = AQueueFirst(&waitQueue);
@@ -479,7 +479,7 @@ void ProcessSchedule () {
     }
     printf ("No runnable processes - exiting!\n");
     exitsim ();	// NEVER RETURNS
-  }
+  }*/
 
   //______CURRENT_PCB_FOR_CONTEXT_SWITCHING_AND_YIELDING________
   //This is called at every context switch(.01 sec or 10 jiffies)
@@ -575,10 +575,9 @@ void ProcessSchedule () {
 /*
   // Now, run the one at the head of the queue.
   pcb = (PCB *)AQueueObject(AQueueFirst(&runQueue));
-  currentPCB = pcb;
+  currentPCB = pcb;*/
   dbprintf ('p',"About to switch to PCB 0x%x,flags=0x%x @ 0x%x\n",
 	    (int)pcb, pcb->flags, (int)(pcb->sysStackPtr[PROCESS_STACK_IAR]));
-*/
 
   // Clean up zombie processes here.  This is done at interrupt time
   // because it can't be done while the process might still be running
