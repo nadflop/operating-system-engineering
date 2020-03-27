@@ -64,12 +64,13 @@ uint32 get_argument(char *string);
 //                  50 for user process
 //----------------------------------------------------------------------
 void ProcessRecalcPriority(PCB * pcb) {
-  if (pcb->flags & PROCESS_TYPE_USER) {
-    pcb->priority = pcb->basePriority + pcb->estcpu/4 + 2*pcb->pnice;
-  }
-  else {
-        pcb->priority = pcb->basePriority + pcb->estcpu/4 + 2*pcb->pnice;
-  }
+  // if (pcb->flags & PROCESS_TYPE_USER) {
+  //   pcb->priority = pcb->basePriority + pcb->estcpu/4 + 2*pcb->pnice;
+  // }
+  // else {
+  //       pcb->priority = pcb->basePriority + pcb->estcpu/4 + 2*pcb->pnice;
+  // }
+  pcb->priority = pcb->basePriority + pcb->estcpu/4 + 2*pcb->pnice;
 }
 //----------------------------------------------------------------------
 //
@@ -108,7 +109,7 @@ int ProcessInsertRunning(PCB * pcb){
 //----------------------------------------------------------------------
 void ProcessDecayEstcpu(PCB * pcb){
   pcb->estcpu = (pcb->estcpu * (double) (2.0 / 3.0)) + (double) pcb->pnice;
-  ProcessRecalcPriority(pcb);
+  //ProcessRecalcPriority(pcb);
 }
 //----------------------------------------------------------------------
 //
@@ -122,15 +123,13 @@ void ProcessDecayEstcpuSleep(PCB * pcb, int time_asleep_jiffies){
   int num_windows_asleep = 0;
   int base = 2/3;
   long long result = 1;
-  if (time_asleep_jiffies >= 10 * PROCESS_QUANTUM_JIFFIES) {
-    num_windows_asleep = time_asleep_jiffies / 10;
+  num_windows_asleep = time_asleep_jiffies / DECAY_WINDOW_JIFFIES;
     //calculate the exponent
     /*while (num_windows_asleep != 0){
       result *= base;
       --num_windows_asleep;
     }*/
-    pcb->estcpu = pcb->estcpu * ((2/3) ^ num_windows_asleep);
-  }
+  pcb->estcpu = pcb->estcpu * ((2/3) ^ num_windows_asleep);
 }
 //----------------------------------------------------------------------
 //
@@ -146,9 +145,9 @@ PCB *ProcessFindHighestPriorityPCB(){
   //Loop through all run queues
   for(i=0;i<NUM_QUEUE; i++){
     //Check if link has processes
-    if(AQueueEmpty(&runQueue[i]) == 0){
+    if(!AQueueEmpty(&runQueue[i])){
       first = AQueueFirst(&runQueue[i]);
-      return first->object; //See Link struct in queue.h
+      return (PCB *)AQueueObject(first); //See Link struct in queue.h
     }
   }
   return NULL;
@@ -165,11 +164,12 @@ void ProcessDecayAllEstcpus(){
   Link * link;
   for(i=0;i<NUM_QUEUE;i++){
     //Check if queue is not empty
-    if(AQueueEmpty(&runQueue[i])==0){
+    if(!AQueueEmpty(&runQueue[i])){
       link = AQueueFirst(&runQueue[i]);
       //traverse through queue and calculate priority of each PCB
       while(link != NULL){
         ProcessDecayEstcpu(((PCB *)AQueueObject(link)));
+        ProcessRecalcPriority(((PCB *)AQueueObject(link)));
         link = AQueueNext(link);
       }
     }
@@ -192,7 +192,7 @@ void ProcessFixRunQueues(){
   for(i=0;i<NUM_QUEUE;i++){
 
     //Check if queue is not empty
-    if(AQueueEmpty(&runQueue[i])==0){
+    if(!AQueueEmpty(&runQueue[i])){
       link = AQueueFirst(&runQueue[i]);
       //traverse through queue and calculate priority of each PCB
 
@@ -200,8 +200,8 @@ void ProcessFixRunQueues(){
         //Check if current process belongs in current RunQueue
         if (WhichQueue((PCB *)AQueueObject(link)) != i){
 
-          //Remove link from current Queue
-          if(AQueueRemove(&link)!=QUEUE_SUCCESS){
+          //Remove link from current Queuecd
+          if(AQueueRemove(&((PCB *)AQueueObject(link))->l)!=QUEUE_SUCCESS){
             printf("Fatal Error: Link could not be removed");
           }
 
@@ -431,6 +431,7 @@ int ProcessCheckRunQueue() {
 void ProcessSchedule () { //The elephant
   PCB *pcb=NULL;
 
+
   int i=0;
   Link *l=NULL;
 
@@ -453,27 +454,34 @@ void ProcessSchedule () { //The elephant
   //Check if highest priority pcb is the idlePCB
   hpPCB = ProcessFindHighestPriorityPCB();
   if(hpPCB == idlePCB){
-    AQueueRemove(&(hpPCB->l));
-    ProcessInsertRunning(hpPCB);
-    currentPCB= ProcessFindHighestPriorityPCB();
-    if(ProcessCountAutowake() == 0){
+    if(AQueueEmpty(&waitQueue)){
       exitsim();
     }
+    else{
+      if(ProcessCountAutowake() == 0){
+        exitsim();
+      }
+    }
+    // AQueueRemove(&(hpPCB->l));
+    // ProcessInsertRunning(hpPCB);
+    //currentPCB= ProcessFindHighestPriorityPCB();
   }
-  if(ProcessCheckRunQueue() == 0){
-      if (!AQueueEmpty(&waitQueue)) {
-        printf("FATAL ERROR: no runnable processes, but there are sleeping processes waiting!\n");
-        l = AQueueFirst(&waitQueue);
-        while (l != NULL) {
-          pcb = AQueueObject(l);
-          printf("Sleeping process %d: ", i++); printf("PID = %d\n", (int)(pcb - pcbs));
-          l = AQueueNext(l);
-        }
-		exitsim();
-      }        
-	  printf ("No runnable processes - exiting!\n");
-      exitsim();
-  }
+  // if(ProcessCheckRunQueue() == 0){
+  //     if (!AQueueEmpty(&waitQueue)) {
+  //       printf("FATAL ERROR: no runnable processes, but there are sleeping processes waiting!\n");
+  //       l = AQueueFirst(&waitQueue);
+  //       while (l != NULL) {
+  //         pcb = AQueueObject(l);
+  //         printf("Sleeping process %d: ", i++); printf("PID = %d\n", (int)(pcb - pcbs));
+  //         l = AQueueNext(l);
+  //       }
+	// 	exitsim();
+  //     }        
+	//   printf ("No runnable processes - exiting!\n");
+  //     exitsim();
+  // }
+
+  
   //if (pcb->idle == 1) {
   //   if(ProcessCountAutowake() == 0){
   //     printf("FATAL ERROR: no runnable processes, but there are sleeping processes waiting!\n");
@@ -520,9 +528,10 @@ void ProcessSchedule () { //The elephant
 
       //Increment the currentPCB estcpu
       //currentPCB->estcpu += 1.0;
-      if(currentPCB->runtime > CPU_WINDOWS_BETWEEN_DECAYS){
-        currentPCB->estcpu += 1.0;
-      }
+      // if(currentPCB->runtime > CPU_WINDOWS_BETWEEN_DECAYS){
+      //   currentPCB->estcpu += 1.0;
+      // }
+      currentPCB->estcpu += 1.0;
 
       //recalculate the priority
       ProcessRecalcPriority(currentPCB);
@@ -531,9 +540,11 @@ void ProcessSchedule () { //The elephant
       //NOTE: Do not fix the the whole RunQueue
       //NOTE: Since the priority may have changed, the runQueue the PCB belongs in may change
     }
-    if (currentPCB->l != NULL){
-      AQueueRemove(&(currentPCB->l));
-    }
+
+    // if (currentPCB->l != NULL){
+    //   AQueueRemove(&(currentPCB->l));
+    // }
+    AQueueRemove(&(currentPCB->l));
     ProcessInsertRunning(currentPCB); //Function moves currentPCB to back of the runQueue
   }
   //__________________________________________________________________
@@ -559,25 +570,36 @@ void ProcessSchedule () { //The elephant
 
 
   //___________________WAKEUP_SLEEPING_PROCESSES______________________
-  if(ProcessCountAutowake()>=1){
+  
+  if(!AQueueEmpty(&waitQueue)){
     waitLink = AQueueFirst(&waitQueue);
-
-    //Traverse throught the waitQueue and wakeup processes that are ready
     while(waitLink != NULL){
       waitPCB =(PCB *)AQueueObject(waitLink);
-
-      //Check if PCB has the autowake flag high
-      if(waitPCB->autowake == 1){
-
-        //Check if process has slept long enough
-        //NOTE: wakeup time is calculated by proce
+      waitLink = AQueueNext(waitLink);
         if(ClkGetCurJiffies()>= waitPCB->wakeuptime){
           ProcessWakeup(waitPCB); //wakeup the process
         }
-      }
-      AQueueNext(waitLink);
     }
-  }
+  }  
+  // if(ProcessCountAutowake()>=1){
+  //   waitLink = AQueueFirst(&waitQueue);
+
+  //   //Traverse throught the waitQueue and wakeup processes that are ready
+  //   while(waitLink != NULL){
+  //     waitPCB =(PCB *)AQueueObject(waitLink);
+
+  //     //Check if PCB has the autowake flag high
+  //     if(waitPCB->autowake == 1){
+
+  //       //Check if process has slept long enough
+  //       //NOTE: wakeup time is calculated by proce
+  //       if(ClkGetCurJiffies()>= waitPCB->wakeuptime){
+  //         ProcessWakeup(waitPCB); //wakeup the process
+  //       }
+  //     }
+  //     AQueueNext(waitLink);
+  //   }
+  // }
   //__________________________________________________________________
 
 
@@ -585,9 +607,10 @@ void ProcessSchedule () { //The elephant
   //Block is called at each context switch
   hpPCB = ProcessFindHighestPriorityPCB();
   if(currentPCB == hpPCB){
-    if (currentPCB-> l != NULL){
-      AQueueRemove(&(hpPCB->l));
-    }
+    // if (currentPCB-> l != NULL){
+    //   AQueueRemove(&(hpPCB->l));
+    // }
+    AQueueRemove(&(hpPCB->l));
     ProcessInsertRunning(currentPCB);
     hpPCB = ProcessFindHighestPriorityPCB();
   }
@@ -617,6 +640,7 @@ void ProcessSchedule () { //The elephant
     }
     ProcessFreeResources(pcb);
   }
+
   dbprintf ('p', "Leaving ProcessSchedule (cur=0x%x)\n", (int)currentPCB);
 
   currentPCB->switchedtime = ClkGetCurJiffies();
@@ -988,6 +1012,9 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
     pcb->flags |= PROCESS_TYPE_SYSTEM;
   }
 
+
+  ProcessRecalcPriority(pcb);
+
   // Place PCB onto run queue
   intrs = DisableIntrs ();
   /*if ((pcb->l = AQueueAllocLink(pcb)) == NULL) {
@@ -1222,7 +1249,7 @@ void ProcessYield() {
 // if pcb is idle, set it as idlePCB
 //-----------------------------------------------------
 void ProcessForkIdle(){
- idlePCB = &pcbs[ProcessFork(ProcessIdle, (uint32)NULL, 0, 0, "IDLE PROCESS", 0)];
+ idlePCB = &pcbs[ProcessFork(&ProcessIdle, (uint32)NULL, 0, 0, "IDLE PROCESS", 0)];
  idlePCB->basePriority = MAX_PRIORITY;
  //TODO: STILL NEED TO FIX THIS
  ProcessRecalcPriority(idlePCB);
