@@ -12,7 +12,7 @@
 #include "queue.h"
 
 // num_pages = size_of_memory / size_of_one_page
-static uint32 freemap[/*size*/];
+static uint32 freemap[16]; //Total memory/pagesize/32 = 16 int32s
 static uint32 pagestart;
 static int nfreepages;
 static int freemapmax;
@@ -57,8 +57,13 @@ int MemoryGetSize() {
 //----------------------------------------------------------------------
 void MemoryModuleInit() {
 //-pagestart = first page since last os page
+//Get last address of os
+uint32 last_os_addr = (lastosaddress & 0x1FFFFC) / MEM_PAGESIZE;
+
+pagestart = pagestart + 1;
 
 //-freemapmax = max index for freemap array
+freemapmax = MEM_MAX_SIZE
 
 //-nfreepages = how many free pages available in the system not including os pages
 
