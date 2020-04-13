@@ -12,10 +12,11 @@
 #include "queue.h"
 
 // num_pages = size_of_memory / size_of_one_page
+//freemap is a bit-vector each bit represents whether that page is free or not
 static uint32 freemap[16]; //Total memory/pagesize/32 = 16 int32s
-static uint32 pagestart;
-static int nfreepages;
-static int freemapmax;
+static uint32 pagestart;  //Page to allow
+static int nfreepages;  //Number of free pages available
+static int freemapmax;  //The total number of pages
 
 //----------------------------------------------------------------------
 //
@@ -56,21 +57,31 @@ int MemoryGetSize() {
 //
 //----------------------------------------------------------------------
 void MemoryModuleInit() {
-//-pagestart = first page since last os page
-//Get last address of os
-uint32 last_os_addr = (lastosaddress & 0x1FFFFC) / MEM_PAGESIZE;
 
-pagestart = pagestart + 1;
+  int i;
+  //-pagestart = first page since last os page
+  //Get last address of os
+  uint32 last_os_page = (lastosaddress & 0x1FFFFC) / MEM_PAGESIZE; //0x1FFFFC converts to PA
+  pagestart = last_os_page + 1; //Page after the os mem that is free
 
-//-freemapmax = max index for freemap array
-freemapmax = MEM_MAX_SIZE
+  //-freemapmax = max index for freemap array (ie. 32 bits * 16 pgs)
+  freemapmax = MEM_MAX_SIZE / MEM_PAGESIZE;
 
-//-nfreepages = how many free pages available in the system not including os pages
+  //-nfreepages = how many free pages available in the system not including os pages
+  nfreepages = MEM_MAX_PAGES - pagestart;
 
-//-set every entry in freemap to 0
+  //-set every entry in freemap to 0 all used
+  for(i=0; i<freemapmax/32;i++){
+    freemap[i]=0; //TODO: doesn't this clear 32 pages at a
+  }
 
-//-for all free pages:
-//-  MemorySetFreemap()
+  //Modify freemap to mark the pages are occupied by os
+  //-for all free pages:
+  //-  MemorySetFreemap()
+  for(i=0; i<last_os_page; i++){
+    MemorySetFreemap(i,1);
+    nfreepages++;
+  }
 }
 
 
@@ -217,26 +228,44 @@ int MemoryPageFaultHandler(PCB *pcb) {
 //---------------------------------------------------------------------
 
 int MemoryAllocPage(void) {
-//-return 0 if no free pages
+  //-return 0 if no free pages
 
-//-find the available bit in freemap
+  //-find the available bit in freemap
 
-//-set it to unavailable
+  //-set it to unavailable
 
-//-decrement number of free pages
+  //-decrement number of free pages
 
-//-return this allocated page number
+  //-return this allocated page number
   return -1;
 }
 
+//---------------------------------------------------------------------
+// Sets the bit position of the selected page to val(1 or 0)
+// to indicate the page is used
+//---------------------------------------------------------------------
+
+void MemorySetFreemap(uint32 page, uint32 val){
+  uint32 idx = page / 32; //which uint32 it belongs into
+  uint32 bit_pos = page % 32 //which bit position in the uint32
+  
+  //build mask
+  uint32 msk = invert(1<<bit_pos);
+  freemap[idx] = (freemap[idx] & msk) | (val<<bit_pos);
+  return;
+}
 
 uint32 MemorySetupPte (uint32 page) {
   return -1;
 }
 
+//---------------------------------------------------------------------
+// Sets the bit position of the selected page to 0
+// to indicate the page is free
+//---------------------------------------------------------------------
 
 void MemoryFreePage(uint32 page) {
-  MemorySetFreemap for given page
-increment number of free pages
+  MemorySetFreemap(page, 1);
+  nfreepages++;
 }
 
