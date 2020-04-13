@@ -56,7 +56,18 @@ int MemoryGetSize() {
 //
 //----------------------------------------------------------------------
 void MemoryModuleInit() {
+//-pagestart = first page since last os page
+
+//-freemapmax = max index for freemap array
+
+//-nfreepages = how many free pages available in the system not including os pages
+
+//-set every entry in freemap to 0
+
+//-for all free pages:
+//-  MemorySetFreemap()
 }
+
 
 
 //----------------------------------------------------------------------
@@ -68,6 +79,19 @@ void MemoryModuleInit() {
 //
 //----------------------------------------------------------------------
 uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
+//-find pagenum from addr
+
+//-find offset value from addr
+
+//-check given address is less than the max vaddress
+
+//-lookup PTE in pcb’s page table
+
+//-if PTE is not valid
+//- save addr to the currentSavedFrame
+//- page fault handler
+
+//-get and return physical address
 }
 
 
@@ -168,7 +192,17 @@ int MemoryCopyUserToSystem (PCB *pcb, unsigned char *from,unsigned char *to, int
 // Feel free to edit.
 //---------------------------------------------------------------------
 int MemoryPageFaultHandler(PCB *pcb) {
-  return MEM_FAIL;
+//-grab faulting addr from the currentSavedFrame
+
+//-grab user stack addr from the currentSavedFrame
+
+//-find pagenum for the faulting addr
+
+//-find pagenum for the user stack
+
+//-segfault (kill the process) if the faulting address is not part of the stack
+//-else allocate a new physical page, setup its PTE, and insert to pagetable
+//-  return MEM_FAIL;
 }
 
 
@@ -178,6 +212,15 @@ int MemoryPageFaultHandler(PCB *pcb) {
 //---------------------------------------------------------------------
 
 int MemoryAllocPage(void) {
+//-return 0 if no free pages
+
+//-find the available bit in freemap
+
+//-set it to unavailable
+
+//-decrement number of free pages
+
+//-return this allocated page number
   return -1;
 }
 
@@ -188,5 +231,7 @@ uint32 MemorySetupPte (uint32 page) {
 
 
 void MemoryFreePage(uint32 page) {
+  MemorySetFreemap for given page
+increment number of free pages
 }
 
