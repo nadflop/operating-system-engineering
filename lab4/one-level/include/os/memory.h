@@ -29,6 +29,7 @@ void MemoryFreePte(uint32);
 uint32 MemorySetupPte(uint32);
 int malloc(PCB, int);
 int mfree(PCB, int);
+int IncreaseRefCount(int page_num);
 #endif	// _memory_h_
 // #ifndef	_memory_h_
 // #define	_memory_h_
