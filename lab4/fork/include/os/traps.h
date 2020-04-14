@@ -33,11 +33,11 @@
 #define	TRAP_DIV0		0x5	// Divide by 0
 #define	TRAP_PRIVILEGE		0x6	// Instruction must be executed as sys
 #define	TRAP_FORMAT		0x7	// Instruction is malformed
+#define TRAP_ROP_ACCESS 0x8
 #define	TRAP_PAGEFAULT		0x20
 #define	TRAP_TLBFAULT		0x30
 #define	TRAP_TIMER		0x40	// timer interrupt
 #define	TRAP_KBD		0x48	// keyboard interrupt
-#define TRAP_ROP_ACCESS 0x8
 
 // This bit is set in CAUSE if the interrupt was a trap instruction
 #define	TRAP_TRAP_INSTR		0x08000000

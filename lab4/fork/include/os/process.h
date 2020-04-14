@@ -97,12 +97,12 @@ void ProcessDestroy(PCB *pcb);
 extern unsigned GetCurrentPid();
 int GetPidFromAddress(PCB *pcb);
 void ProcessKill();
-void ProcessRealFork();
-void VerifyFork();
+
 //-------------------------------------------------------
 // Put any functions prototypes that you define here.
 //-------------------------------------------------------
-
+void ProcessRealFork();
+void VerifyFork(PCB* pcb);
 
 
 #endif	/* __process_h__ */
