@@ -385,3 +385,7 @@ int MemoryROPAccessHandler(PCB* pcb){
   
   return MEM_SUCCESS
 }
+
+void increment_refcounter(int page_num){
+  page_refcounters[page_num]++; 
+}
