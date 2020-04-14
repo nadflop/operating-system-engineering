@@ -6,8 +6,8 @@
 # this way because the build procedure for all apps is basically the same.
 
 
-SRCS=q2_2.c
-EXEC=q2_2.dlx.obj
+SRCS=test_fork.c
+EXEC=test_fork.dlx.obj
 
 include ../Makerules
 

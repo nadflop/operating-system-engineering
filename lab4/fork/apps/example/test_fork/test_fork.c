@@ -3,6 +3,7 @@
 
 void main (int argc, char *argv[])
 {
+  int child_proc = 0;
   sem_t s_procs_completed; // Semaphore to signal the original process that we're done
 
   if (argc != 2) { 
@@ -13,14 +14,22 @@ void main (int argc, char *argv[])
   // Convert the command-line strings into integers for use as handles
   s_procs_completed = dstrtol(argv[1], NULL, 10);
 
-  // Now print a message to show that everything worked
-  Printf("q2_5 (%d): Hello world!\n", getpid());
+  //call fork() here
+  child_proc = fork();
 
+  if (child_proc) {
+    Printf("PARENT FOR THE PROCESS: %d\n", getpid());
+  }
+  else
+  {
+    Printf("CHILD OF THE PROCESS: %d\n", getpid());
+  }
+  
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
-    Printf("q2_5 (%d): Bad semaphore s_procs_completed (%d)!\n", getpid(), s_procs_completed);
+    Printf("test_fork (%d): Bad semaphore s_procs_completed (%d)!\n", getpid(), s_procs_completed);
     Exit();
   }
 
-  Printf("q2_5 (%d): Done!\n", getpid());
+  Printf("test_fork (%d): Done!\n", getpid());
 }

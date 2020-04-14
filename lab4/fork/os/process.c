@@ -1082,6 +1082,27 @@ void ProcessRealFork(){
   }
 
   RestoreIntrs(intrs);
+  //Q4:
+  printf("PARENT %d FORK\n", GetPidFromAddress(currentPCB));
+  VerifyFork(currentPCB);
+  printf("CHILD %d FORK\n", GetPidFromAddress(childpcb));
+  VerifyFork(childpcb);
+}
+
+//test code to verify that fork() with copy-on-write works
+void VerifyFork(PCB * pcb){
+  int i;
+
+  printf("PCB: %d currentSavedFrame: %d\n", GetPidFromAddress(pcb), pcb->currentSavedFrame);
+  printf("PCB: %d sysStackPtr: %d\n", GetPidFromAddress(pcb), pcb->sysStackPtr);
+  printf("PCB: %d sysStackArea: %d\n", GetPidFromAddress(pcb), pcb->sysStackArea);
+  for (i=0; i <  MEM_L1TABLE_SIZE; i++){
+    //check if the pagetable entries are valid:
+    if (pcb->pagetable[i] != 0) {
+      printf("PCB: %d PTE[%d]: %d\n", GetPidFromAddress(pcb), i, pcb->pagetable[i]);
+    }
+  }
+  printf("\n");
 }
 
 
