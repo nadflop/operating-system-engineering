@@ -155,7 +155,7 @@ L17:
 	addi	r29,r29,#16
 L18:
 	lhi	r2,#15
-	addui	r2,r2,#24572
+	addui	r2,r2,#24576
 	jal	_getpid
 	nop	; not filled.
 	addi	r29,r29,#-16

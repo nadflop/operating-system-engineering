@@ -14,7 +14,7 @@
 
 // num_pages = size_of_memory / size_of_one_page
 //freemap is a bit-vector each bit represents whether that page is free or not
-static uint32 freemap[16]; //Total memory/pagesize/32 = 16 int32s
+static uint32 freemap[MEM_MAX_PAGES/32]; //Total memory/pagesize/32 = 16 int32s
 static uint32 pagestart;  //Page to allow
 static int nfreepages;  //Number of free pages available
 static int freemapmax;  //The total number of pages
@@ -66,22 +66,21 @@ void MemoryModuleInit() {
   pagestart = last_os_page; //Page after the os mem that is free
 
   //-freemapmax = max index for freemap array (ie. 32 bits * 16 pgs)
-  freemapmax = MEM_MAX_SIZE / MEM_PAGESIZE;
-
+  freemapmax = MEM_MAX_PHYS_MEM / MEM_PAGESIZE;
   //-nfreepages = how many free pages available in the system not including os pages
   nfreepages = 0;
 
   //-set every entry in freemap to 0 all used
-  for(i=0; i<freemapmax/32;i++){
+  for(i=0; i<MEM_MAX_PAGES/32;i++){
     freemap[i]=0; //TODO: doesn't this clear 32 pages at a
   }
   printf("MemoryModInit: os occupies up to pg %d\n", last_os_page);
   //Modify freemap to mark the pages are occupied by os
   //-for all free pages:
   //-  MemorySetFreemap()
-  for(i=0; i<last_os_page; i++){
-    MemorySetFreemap(i,1);
+  for(i=pagestart; i< MEM_MAX_PHYS_MEM/MEM_PAGESIZE; i++){
     nfreepages++;
+    MemorySetFreemap(i,1);
   }
 }
 

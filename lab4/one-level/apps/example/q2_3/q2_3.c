@@ -23,7 +23,7 @@ void main (int argc, char *argv[])
     Exit();
   }
 
-  max_addrs = (0x000fffff + 1 - 40960) - 4;
+  max_addrs = (0x000fffff + 1 - 40960);
   //access memory beyond the max virtual address
   Printf("q2_3 (%d): Trying to print val at address %d \n", getpid(), max_addrs);
   Printf("q2_3 (%d): Accessing Memory Location %d \n", getpid(), *max_addrs);

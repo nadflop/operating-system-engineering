@@ -444,14 +444,14 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   //set pcb system stack area w.r.t. this new page
   pcb->sysStackArea = MemoryAllocPage()*MEM_PAGESIZE;
   //stackframe = set the bottom (highest addrs) of the sys. stack area (4-byte allign)
-  stackframe = (uint32 *)(pcb->sysStackArea + MEM_PAGESIZE - 4);
+  //stackframe = (uint32 *)(pcb->sysStackArea + MEM_PAGESIZE - 4);
 
   //user stack (allocated at the max page number)
   //allocate another new page for user stack
   //set pcb pagetable entry for this page
   pcb->pagetable[MEM_L1TABLE_SIZE-1] = MemorySetupPte(MemoryAllocPage());
 
-
+  stackframe = (uint32 *)(pcb->sysStackArea + MEM_PAGESIZE - 4);
   // Now that the stack frame points at the bottom of the system stack memory area, we need to
   // move it up (decrement it) by one stack frame size because we're about to fill in the
   // initial stack frame that will be loaded for this PCB when it gets switched in by 
@@ -518,7 +518,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
     //----------------------------------------------------------------------
     //the max virtual address ends with 0xF so need to - 3 to make it 
     //4-byte aligned
-    pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] = (uint32)(MEM_MAX_VIRTUAL_ADDRESS - 3); 
+    pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] = MEM_MAX_VIRTUAL_ADDRESS - 3; 
 
     //--------------------------------------------------------------------
     // This part is setting up the initial user stack with argc and argv.
