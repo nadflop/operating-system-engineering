@@ -329,8 +329,7 @@ void MemoryFreePage(uint32 page) {
 }
 
 void MemoryFreePte(uint32 pte) {
-  uint32 page_num = (pte & MEM_PTE_MASK) / MEM_PAGESIZE);
-  uin
+  uint32 page_num = (pte & MEM_PTE_MASK) / MEM_PAGESIZE;
   if(page_refcounters[page_num]< 1){
     ProcessKill();
   }
@@ -366,7 +365,7 @@ int MemoryROPAccessHandler(PCB* pcb){
   }
 
   // if == 1
-  if(page_refcounters == 1){
+  if(page_refcounters[phys_page] == 1){
     // //nobody else is referring to this page
     // mark it as READ/WRITE ← there was a typo here
     pcb->pagetable[fault_page] &= ~MEM_PTE_READONLY;
@@ -383,7 +382,7 @@ int MemoryROPAccessHandler(PCB* pcb){
     page_refcounters[phys_page]--;
   }
   
-  return MEM_SUCCESS
+  return MEM_SUCCESS;
 }
 
 void increment_refcounter(int page_num){
