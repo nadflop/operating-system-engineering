@@ -37,6 +37,7 @@
 #define	TRAP_TLBFAULT		0x30
 #define	TRAP_TIMER		0x40	// timer interrupt
 #define	TRAP_KBD		0x48	// keyboard interrupt
+#define TRAP_ROP_ACCESS 0x8
 
 // This bit is set in CAUSE if the interrupt was a trap instruction
 #define	TRAP_TRAP_INSTR		0x08000000
