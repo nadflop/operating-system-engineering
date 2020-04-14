@@ -96,12 +96,20 @@ void MemoryModuleInit() {
 //----------------------------------------------------------------------
 uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
 //-find pagenum from addr
+int page_num = addr / MEM_PAGESIZE;
 
 //-find offset value from addr
+int page_offset = addr % MEM_PAGESIZE;
 
-//-check given address is less than the max vaddress
+//-check given address is less than the max address
+if(addr > MEM_MAX_VIRTUAL_ADDRESS))
+  printf("Error in TranslateAddr: input addr exceeds max virtual addr\n");
+  ProcessKill();
+  return 0;
 
 //-lookup PTE in pcb’s page table
+
+
 
 //-if PTE is not valid
 //- save addr to the currentSavedFrame
