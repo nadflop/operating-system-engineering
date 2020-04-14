@@ -1,6 +1,7 @@
 #include "usertraps.h"
 #include "misc.h"
 
+
 void main (int argc, char *argv[])
 {
   sem_t s_procs_completed; // Semaphore to signal the original process that we're done
@@ -23,7 +24,7 @@ void main (int argc, char *argv[])
     Exit();
   }
 
-  max_addrs = MEM_MAX_VIRTUAL_ADDRESS + 1;
+  max_addrs = 0x000fffff + 1;
   //access memory beyond the max virtual address
   Printf("q2_2 (%d): Trying to print val at address %d \n", getpid(), max_addrs);
   Printf("q2_2 (%d): Accessing Memory Location %d \n", getpid(), *max_addrs);
