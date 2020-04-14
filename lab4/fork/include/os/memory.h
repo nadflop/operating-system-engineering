@@ -27,6 +27,7 @@ void MemorySetFreemap(uint32, uint32);
 void MemoryFreePage(uint32);
 void MemoryFreePte(uint32);
 uint32 MemorySetupPte(uint32);
+int MemoryROPAccessHandler(PCB*);
 int malloc(PCB, int);
 int mfree(PCB, int);
 #endif	// _memory_h_

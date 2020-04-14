@@ -18,7 +18,7 @@ static uint32 freemap[MEM_MAX_PAGES/32]; //Total memory/pagesize/32 = 16 int32s
 static uint32 pagestart;  //Page to allow
 static int nfreepages;  //Number of free pages available
 static int freemapmax;  //The total number of pages
-
+static int page_refcounters[ MEM_MAX_PAGES];
 //----------------------------------------------------------------------
 //
 //	This silliness is required because the compiler believes that
@@ -74,6 +74,12 @@ void MemoryModuleInit() {
   for(i=0; i<MEM_MAX_PAGES/32;i++){
     freemap[i]=0; //TODO: doesn't this clear 32 pages at a
   }
+  
+  //Set ref counter to be one for all os pages
+  for(i=0; i<pagestart; i++){
+    page_refcounters[i] = 1;
+  }
+
   printf("MemoryModInit: os occupies up to pg %d\n", last_os_page);
   //Modify freemap to mark the pages are occupied by os
   //-for all free pages:
@@ -287,6 +293,8 @@ int MemoryAllocPage(void) {
   //-decrement number of free pages
   nfreepages--;
 
+  page_refcounters[page_num] =1;
+
   printf("MemAllocPg: Pg %d allocated by PID: %d\n", page_num, GetCurrentPid());
   //-return this allocated page number
   return page_num;
@@ -321,5 +329,59 @@ void MemoryFreePage(uint32 page) {
 }
 
 void MemoryFreePte(uint32 pte) {
-  MemoryFreePage((pte & MEM_PTE_MASK) / MEM_PAGESIZE);
+  uint32 page_num = (pte & MEM_PTE_MASK) / MEM_PAGESIZE);
+  uin
+  if(page_refcounters[page_num]< 1){
+    ProcessKill();
+  }
+  else{
+    page_refcounters[page_num]--;
+  }
+
+  if(page_refcounters[page_num]==0){
+    MemoryFreePage(page_num);
+  }
+
+}
+
+int MemoryROPAccessHandler(PCB* pcb){
+  uint32 new_page;
+  // find fault_addr from pcb
+  uint32 fault_addr = pcb->currentSavedFrame[PROCESS_STACK_FAULT];
+
+  // find l1_page_num for this fault_addr
+  uint32 fault_page = fault_addr / MEM_PAGESIZE;
+
+  // find pte associated with this l1_page_num
+  // find physical_page_num
+  uint32 phys_page = (pcb->pagetable[fault_page] & MEM_PTE_MASK)/MEM_PAGESIZE;
+
+  
+
+  // if refcounter for the physical page < 1
+  if(page_refcounters[phys_page] < 1){
+    // kill the process, return MEM_FAIL
+    ProcessKill();
+    return MEM_FAIL;
+  }
+
+  // if == 1
+  if(page_refcounters == 1){
+    // //nobody else is referring to this page
+    // mark it as READ/WRITE ← there was a typo here
+    pcb->pagetable[fault_page] &= ~MEM_PTE_READONLY;
+  }
+  else{
+    // //other process are referring to this page
+    // allocate a new page
+    new_page = MemoryAllocPage();
+    // copy old data to the new page via “bcopy”
+    bcopy((void *)(pcb->pagetable[fault_page]), (void*) (new_page*MEM_PAGESIZE), MEM_PAGESIZE);
+    // setup pte for this new page
+    pcb->pagetable[fault_page] = MemorySetupPte(new_page);
+    // decrement refcounter
+    page_refcounters[phys_page]--;
+  }
+  
+  return MEM_SUCCESS
 }
