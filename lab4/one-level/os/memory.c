@@ -10,6 +10,7 @@
 #include "process.h"
 #include "memory.h"
 #include "queue.h"
+#include "memory_constants.h"
 
 // num_pages = size_of_memory / size_of_one_page
 //freemap is a bit-vector each bit represents whether that page is free or not
@@ -102,25 +103,24 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
   int page_offset = addr % MEM_PAGESIZE;
 
   //-check given address is less than the max address
-  if(addr > MEM_MAX_VIRTUAL_ADDRESS))
+  if(addr > MEM_MAX_VIRTUAL_ADDRESS){
     printf("Error in TranslateAddr: input addr exceeds max virtual addr\n");
     ProcessKill();
-    return 0;
-
+    return(0);
+  }
   //-lookup PTE in pcb’s page table
   //-if PTE is not valid
   //- save addr to the currentSavedFrame
   //- page fault handler
-  if(! (pcb->pagetable[page] & MEM_PTE_MASK == MEM_PTE_VALID)){
-    
+  if(!(pcb->pagetable[page_num] & MEM_PTE_VALID)){
     pcb->currentSavedFrame[PROCESS_STACK_FAULT] = addr;
     if(MemoryPageFaultHandler(pcb) == MEM_FAIL){
       printf("Error: PageFaultHanlder not handled\n");
-      return 0;
+      return (0);
     }
   }
   //-get and return physical address
-  return((pcb->pagetable[page] & MEM_PTE_MASK) + page_offset);
+  return((pcb->pagetable[page_num] & MEM_PTE_MASK) + page_offset);
 }
 
 
@@ -210,6 +210,10 @@ int MemoryCopyUserToSystem (PCB *pcb, unsigned char *from,unsigned char *to, int
   return (MemoryMoveBetweenSpaces (pcb, to, from, n, -1));
 }
 
+uint32 MemorySetupPte (uint32 page) {
+  return ((page * MEM_PAGESIZE) | MEM_PTE_VALID);
+}
+
 //---------------------------------------------------------------------
 // MemoryPageFaultHandler is called in traps.c whenever a page fault 
 // (better known as a "seg fault" occurs.  If the address that was
@@ -240,7 +244,7 @@ int MemoryPageFaultHandler(PCB *pcb) {
   //-else allocate a new physical page, setup its PTE, and insert to pagetable
   //-  return MEM_FAIL;
   if(user_page > fault_page){
-    printf("SEG FAULT: in PCB %d, fault_addr 0x%08x", getPIDFromAddress(pcb),fault_addr);
+    printf("SEG FAULT: in PCB %d, fault_addr 0x%08x", GetPidFromAddress(pcb),fault_addr);
     ProcessKill();
     return MEM_FAIL;
   }
@@ -271,14 +275,14 @@ int MemoryAllocPage(void) {
   }
 
   //-find the available bit in freemap
-  while(freemapmax[index] == 0){
+  while(freemap[index] == 0){
     index++;
   }
   freemap_chunk = freemap[index];
-  while(freemap_chunk & 1<<bit_pos == 0){
-    bitnum++;
+  while((freemap_chunk & 1<<bit_pos) == 0){
+    bit_pos++;
   }
-  page_num = index * 32 + bitnum;
+  page_num = index * 32 + bit_pos;
 
 
   //-set it to unavailable
@@ -287,7 +291,7 @@ int MemoryAllocPage(void) {
   //-decrement number of free pages
   nfreepages--;
 
-  printf("MemAllocPg: Pg %d allocated by PID: %d", page_num, GetCurrentPID())
+  printf("MemAllocPg: Pg %d allocated by PID: %d", page_num, GetCurrentPid());
   //-return this allocated page number
   return page_num;
 }
@@ -299,7 +303,7 @@ int MemoryAllocPage(void) {
 
 void MemorySetFreemap(uint32 page, uint32 val){
   uint32 idx = page / 32; //which uint32 it belongs into
-  uint32 bit_pos = page % 32 //which bit position in the uint32
+  uint32 bit_pos = page % 32;//which bit position in the uint32
   
   //build mask
   uint32 msk = invert(1<<bit_pos);
@@ -307,9 +311,8 @@ void MemorySetFreemap(uint32 page, uint32 val){
   return;
 }
 
-uint32 MemorySetupPte (uint32 page) {
-  return -1;
-}
+
+
 
 //---------------------------------------------------------------------
 // Sets the bit position of the selected page to 0
