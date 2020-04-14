@@ -999,14 +999,12 @@ void ProcessKill() {
   ProcessSchedule();
 }
 
-int ProcessRealFork(){
+void ProcessRealFork(){
   int i;
   int intrs;
   PCB * childpcb;
 
   intrs = DisableIntrs ();
-  dbprintf ('I', "Old interrupt value was 0x%x.\n", intrs);
-  dbprintf ('p', "Entering ProcessFork args=0x%x 0x%x %s %d\n", (int)func,param, name, isUser);
   // Get a free PCB for the new process
   if (AQueueEmpty(&freepcbs)) { //make sure free pcbs is not empty
     printf ("FATAL error: no free processes!\n");
@@ -1022,7 +1020,7 @@ int ProcessRealFork(){
   }
 
   // This prevents someone else from grabbing this process
-  ProcessSetStatus (pcb, PROCESS_STATUS_RUNNABLE);
+  ProcessSetStatus (childpcb, PROCESS_STATUS_RUNNABLE);
   // At this point, the PCB is allocated and nobody else can get it.
   // However, it's not in the run queue, so it won't be run.  Thus, we
   // can turn on interrupts here.
