@@ -152,8 +152,8 @@ void ProcessFreeResources (PCB *pcb) {
     }
   }
   //free the system stack
-  MemoryFreePte(pcb->sysStackArea);
-  pcb->sysStackArea = 0;
+  MemoryFreePage(pcb->sysStackArea / MEM_PAGESIZE);
+  //pcb->sysStackArea = 0;
 
   ProcessSetStatus (pcb, PROCESS_STATUS_FREE);
 }
@@ -434,10 +434,15 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   //---------------------------------------------------------
   pcb->npages = 6;
 
+  //allocate 4 pages for user code & global data
+  for (i=0; i < 4; i++) {
+    pcb->pagetable[i] = MemorySetupPte(MemoryAllocPage());
+  }
+
   //system stack
   //allocate a new page
   //set pcb system stack area w.r.t. this new page
-  pcb->sysStackArea = MemoryAllocPage();
+  pcb->sysStackArea = MemoryAllocPage()*MEM_PAGESIZE;
   //stackframe = set the bottom (highest addrs) of the sys. stack area (4-byte allign)
   stackframe = (uint32 *)(pcb->sysStackArea + MEM_PAGESIZE - 4);
 
@@ -445,11 +450,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   //allocate another new page for user stack
   //set pcb pagetable entry for this page
   pcb->pagetable[MEM_L1TABLE_SIZE-1] = MemorySetupPte(MemoryAllocPage());
-  
-  //allocate 4 pages for user code & global data
-  for (i=0; i < 4; i++) {
-    pcb->pagetable[i] = MemorySetupPte(MemoryAllocPage());
-  }
+
 
   // Now that the stack frame points at the bottom of the system stack memory area, we need to
   // move it up (decrement it) by one stack frame size because we're about to fill in the
@@ -483,7 +484,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   //PTSIZE = max no entries in level 1 page
   //PTBITS = lower bit --> bit position of the least significant bit
   //         upper bit --> 
-  stackframe[PROCESS_STACK_PTBASE] = (uint32 *) (pcb->pagetable);
+  stackframe[PROCESS_STACK_PTBASE] = (uint32) (pcb->pagetable);
   stackframe[PROCESS_STACK_PTSIZE] = MEM_L1TABLE_SIZE;
   stackframe[PROCESS_STACK_PTBITS] = (MEM_L1FIELD_FIRST_BITNUM << 16) | MEM_L1FIELD_FIRST_BITNUM;
   
@@ -517,7 +518,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
     //----------------------------------------------------------------------
     //the max virtual address ends with 0xF so need to - 3 to make it 
     //4-byte aligned
-    stackframe[PROCESS_STACK_USER_STACKPOINTER] = (uint32 *)(MEM_MAX_VIRTUAL_ADDRESS - 3); 
+    pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] = (uint32)(MEM_MAX_VIRTUAL_ADDRESS - 3); 
 
     //--------------------------------------------------------------------
     // This part is setting up the initial user stack with argc and argv.

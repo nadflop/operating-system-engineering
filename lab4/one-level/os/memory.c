@@ -62,20 +62,20 @@ void MemoryModuleInit() {
   int i;
   //-pagestart = first page since last os page
   //Get last address of os
-  uint32 last_os_page = (lastosaddress & 0x1FFFFC) / MEM_PAGESIZE; //0x1FFFFC converts to PA
-  pagestart = last_os_page + 1; //Page after the os mem that is free
+  uint32 last_os_page = (lastosaddress + MEM_PAGESIZE -4) / MEM_PAGESIZE; //0x1FFFFC converts to PA
+  pagestart = last_os_page; //Page after the os mem that is free
 
   //-freemapmax = max index for freemap array (ie. 32 bits * 16 pgs)
   freemapmax = MEM_MAX_SIZE / MEM_PAGESIZE;
 
   //-nfreepages = how many free pages available in the system not including os pages
-  nfreepages = MEM_MAX_PAGES - pagestart;
+  nfreepages = 0;
 
   //-set every entry in freemap to 0 all used
   for(i=0; i<freemapmax/32;i++){
     freemap[i]=0; //TODO: doesn't this clear 32 pages at a
   }
-
+  printf("MemoryModInit: os occupies up to pg %d\n", last_os_page);
   //Modify freemap to mark the pages are occupied by os
   //-for all free pages:
   //-  MemorySetFreemap()
@@ -120,7 +120,7 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
     }
   }
   //-get and return physical address
-  return(pcb->pagetable[page_num]);// & MEM_PTE_MASK) + page_offset);
+  return((pcb->pagetable[page_num] & MEM_PTE_MASK) + page_offset);
 }
 
 
@@ -288,7 +288,7 @@ int MemoryAllocPage(void) {
   //-decrement number of free pages
   nfreepages--;
 
-  printf("MemAllocPg: Pg %d allocated by PID: %d", page_num, GetCurrentPid());
+  printf("MemAllocPg: Pg %d allocated by PID: %d\n", page_num, GetCurrentPid());
   //-return this allocated page number
   return page_num;
 }
@@ -321,3 +321,6 @@ void MemoryFreePage(uint32 page) {
   nfreepages++;
 }
 
+void MemoryFreePte(uint32 pte) {
+  MemoryFreePage((pte & MEM_PTE_MASK) / MEM_PAGESIZE);
+}
