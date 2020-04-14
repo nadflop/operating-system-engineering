@@ -42,10 +42,6 @@ void main (int argc, char *argv[])
     // Access memory outside of currently allocated pages (3)
   Printf("-------------------------------------------------------------------------------------\n");
   Printf("makeprocs (%d): Access memory outside of currently allocated pages #%d\n", getpid(), i);
-  if ((s_procs_completed = sem_create(0)) == SYNC_FAIL) {
-    Printf("makeprocs (%d): Bad sem_create\n", getpid());
-    Exit();
-  }
   process_create(Q2_3, s_procs_completed_str, NULL);
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
     Printf("Bad semaphore s_procs_completed (%d) in %s\n", s_procs_completed, argv[0]);
@@ -53,11 +49,6 @@ void main (int argc, char *argv[])
   }
   // Call stack grows larger than 1 page (4)
   Printf("-------------------------------------------------------------------------------------\n");
-  Printf("makeprocs (%d): Call stack grows larger than 1 page #%d\n", getpid(), i);
-  if ((s_procs_completed = sem_create(0)) == SYNC_FAIL) {
-    Printf("makeprocs (%d): Bad sem_create\n", getpid());
-    Exit();
-  }
   process_create(Q2_4, s_procs_completed_str, NULL);
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
     Printf("Bad semaphore s_procs_completed (%d) in %s\n", s_procs_completed, argv[0]);
@@ -66,10 +57,6 @@ void main (int argc, char *argv[])
   // Create Hello World processes (5)
   Printf("-------------------------------------------------------------------------------------\n");
   Printf("makeprocs (%d): Creating %d hello world's in a row, but only one runs at a time\n", getpid(), 100);
-  if ((s_procs_completed = sem_create(0)) == SYNC_FAIL) {
-    Printf("makeprocs (%d): Bad sem_create\n", getpid());
-    Exit();
-  }
   for(i=0; i<100; i++) {
     Printf("makeprocs (%d): Creating hello world #%d\n", getpid(), i);
     process_create(Q2_5, s_procs_completed_str, NULL);
@@ -82,10 +69,6 @@ void main (int argc, char *argv[])
   // Count to a large number in a for loop (6)
   Printf("-------------------------------------------------------------------------------------\n");
   Printf("makeprocs (%d): Count to a large number in a for loop for %d times\n", getpid(), 30);
-    if ((s_procs_completed = sem_create(0)) == SYNC_FAIL) {
-    Printf("makeprocs (%d): Bad sem_create\n", getpid());
-    Exit();
-  }
   for(i=0; i<30; i++) {
     Printf("makeprocs (%d): Count to a large number in a for loop #%d\n", getpid(), i);
     process_create(Q2_6, s_procs_completed_str, NULL);
@@ -97,10 +80,6 @@ void main (int argc, char *argv[])
   // Access memory beyond the max virtual address (2)
   Printf("-------------------------------------------------------------------------------------\n");
   Printf("makeprocs (%d): Access memory beyond the max virtual address #%d\n", getpid(), i);
-  if ((s_procs_completed = sem_create(0)) == SYNC_FAIL) {
-    Printf("makeprocs (%d): Bad sem_create\n", getpid());
-    Exit();
-  }
   process_create(Q2_2, s_procs_completed_str, NULL);
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
     Printf("Bad semaphore s_procs_completed (%d) in %s\n", s_procs_completed, argv[0]);
