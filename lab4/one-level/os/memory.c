@@ -108,6 +108,9 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
     return 0;
 
   //-lookup PTE in pcb’s page table
+  //-if PTE is not valid
+  //- save addr to the currentSavedFrame
+  //- page fault handler
   if(! (pcb->pagetable[page] & MEM_PTE_MASK == MEM_PTE_VALID)){
     
     pcb->currentSavedFrame[PROCESS_STACK_FAULT] = addr;
@@ -116,16 +119,12 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
       return 0;
     }
   }
+  //-get and return physical address
   return((pcb->pagetable[page] & MEM_PTE_MASK) + page_offset);
-
 }
 
 
-//-if PTE is not valid
-//- save addr to the currentSavedFrame
-//- page fault handler
 
-//-get and return physical address
 }
 
 
@@ -226,17 +225,31 @@ int MemoryCopyUserToSystem (PCB *pcb, unsigned char *from,unsigned char *to, int
 // Feel free to edit.
 //---------------------------------------------------------------------
 int MemoryPageFaultHandler(PCB *pcb) {
-//-grab faulting addr from the currentSavedFrame
+  //-grab faulting addr from the currentSavedFrame
+  uint32 fault_addr = pcb->currentSavedFrame[PROCESS_STACK_FAULT];
 
-//-grab user stack addr from the currentSavedFrame
+  //-grab user stack addr from the currentSavedFrame
+  uint32 user_addr = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER];
 
-//-find pagenum for the faulting addr
+  //-find pagenum for the faulting addr
+  uint32 fault_page = fault_addr / MEM_PAGESIZE;
+  //-find pagenum for the user stack
+  uint32 user_page = user_addr / MEM_PAGESIZE;
 
-//-find pagenum for the user stack
+  //-segfault (kill the process) if the faulting address is not part of the stack
+  //-else allocate a new physical page, setup its PTE, and insert to pagetable
+  //-  return MEM_FAIL;
+  if(user_page > fault_page){
+    printf("SEG FAULT: in PCB %d, fault_addr 0x%08x", getPIDFromAddress(pcb),fault_addr);
+    ProcessKill();
+    return MEM_FAIL;
+  }
+  else{
+    pcb->pagetable[fault_page] = MemorySetupPte(MemoryAllocPage());
+    pcb->npages++;
+    return MEM_SUCCESS;
+  }
 
-//-segfault (kill the process) if the faulting address is not part of the stack
-//-else allocate a new physical page, setup its PTE, and insert to pagetable
-//-  return MEM_FAIL;
 }
 
 
@@ -246,16 +259,37 @@ int MemoryPageFaultHandler(PCB *pcb) {
 //---------------------------------------------------------------------
 
 int MemoryAllocPage(void) {
+  int index = 0;
+  uint32 freemap_chunk; //int from the freemap array
+  uint32 bit_pos = 0;
+  uint32 page_num;
+
   //-return 0 if no free pages
+  if(nfreepages == 0){
+    printf("MemAllocPg: no free pages\n");
+    return 0;
+  }
 
   //-find the available bit in freemap
+  while(freemapmax[index] == 0){
+    index++;
+  }
+  freemap_chunk = freemap[index];
+  while(freemap_chunk & 1<<bit_pos == 0){
+    bitnum++;
+  }
+  page_num = index * 32 + bitnum;
+
 
   //-set it to unavailable
+  MemorySetFreemap(page_num, 0);
 
   //-decrement number of free pages
+  nfreepages--;
 
+  printf("MemAllocPg: Pg %d allocated by PID: %d", page_num, GetCurrentPID())
   //-return this allocated page number
-  return -1;
+  return page_num;
 }
 
 //---------------------------------------------------------------------
