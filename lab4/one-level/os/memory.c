@@ -120,12 +120,9 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
     }
   }
   //-get and return physical address
-  return((pcb->pagetable[page_num] & MEM_PTE_MASK) + page_offset);
+  return(pcb->pagetable[page_num]);// & MEM_PTE_MASK) + page_offset);
 }
 
-
-
-}
 
 
 //----------------------------------------------------------------------
