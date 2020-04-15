@@ -1,5 +1,5 @@
-Author: Anthony Hou, Juan Gaona
-Login: hou71, jgaona
+Author: Anthony Hou, 
+Login: hou71, 
 
 
 how to build solution
