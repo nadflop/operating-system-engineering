@@ -1,11 +1,17 @@
 how to build solution
-  cd os
-  make
-  cd ../apps/q?
-  make
+
+Compile OS:
+	$  cd os
+	$  make
+
+Compile Program:
+	$  cd ../apps/examples
+	$  make
+	$  make run
   
 anything unusual that the TA should know
   No
   
 list of any external sources referenced while working on your solution
-  None
+  TA Sanghyun Cho's outline guide
+  Campuswire
