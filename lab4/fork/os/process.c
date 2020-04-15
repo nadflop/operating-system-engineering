@@ -1071,7 +1071,7 @@ void ProcessRealFork(){
   // This prevents someone else from grabbing this process
   ProcessSetStatus(childpcb, PROCESS_STATUS_RUNNABLE);
   //grab child pcb link
-  if ((childpcb->l = AQueueAllocLink(&childpcb[i])) == NULL) {
+  if ((childpcb->l = AQueueAllocLink(childpcb)) == NULL) {
     printf("FATAL ERROR: could not allocate link in ProcessModuleInit!\n");
     exitsim();
   }
