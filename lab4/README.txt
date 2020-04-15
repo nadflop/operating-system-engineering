@@ -1,5 +1,5 @@
-Author: Anthony Hou, 
-Login: hou71, 
+Author: Anthony Hou, Nur Nadhira Aqilah Binti Mohd Shah
+Login: hou71, mohdshah
 
 
 how to build solution
