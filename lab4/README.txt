@@ -1,3 +1,7 @@
+Author: Anthony Hou, Juan Gaona
+Login: hou71, jgaona
+
+
 how to build solution
 
 Compile OS:
