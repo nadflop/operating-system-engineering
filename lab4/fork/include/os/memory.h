@@ -30,6 +30,8 @@ uint32 MemorySetupPte(uint32);
 int MemoryROPAccessHandler(PCB*);
 int malloc(PCB, int);
 int mfree(PCB, int);
+
+void increment_refcounter(int);
 #endif	// _memory_h_
 // #ifndef	_memory_h_
 // #define	_memory_h_

@@ -1,0 +1,70 @@
+cd ../../bin; dlxsim -x os.dlx.obj -a -u makeprocs.dlx.obj; ee469_fixterminal
+Stack=0x1fffd0, pc starting at 0x125a8
+Got 2 arguments.
+Available memory: 0x22c60 -> 0x200000.
+Argument count is 2.
+Argument 0 is -u.
+Argument 1 is makeprocs.dlx.obj.
+MemoryModInit: os occupies up to pg 35
+MemAllocPg: Pg 35 allocated by PID: 178956888
+MemAllocPg: Pg 36 allocated by PID: 178956888
+MemAllocPg: Pg 37 allocated by PID: 178956888
+MemAllocPg: Pg 38 allocated by PID: 178956888
+MemAllocPg: Pg 39 allocated by PID: 178956888
+MemAllocPg: Pg 40 allocated by PID: 178956888
+MemAllocPg: Pg 41 allocated by PID: 31
+MemAllocPg: Pg 42 allocated by PID: 31
+MemAllocPg: Pg 43 allocated by PID: 31
+MemAllocPg: Pg 44 allocated by PID: 31
+MemAllocPg: Pg 45 allocated by PID: 31
+MemAllocPg: Pg 46 allocated by PID: 31
+-------------------------------------------------------------------------------------
+makeprocs (31): All other processes completed, exiting main process.
+MemAllocPg: Pg 35 allocated by PID: 30
+PARENT 30 FORK
+PCB: 30 currentSavedFrame: 188072
+PCB: 30 sysStackPtr: 188412
+PCB: 30 sysStackArea: 184320
+PCB: 30 PTE[0x0]: 0x29005
+PCB: 30 PTE[0x1]: 0x2a005
+PCB: 30 PTE[0x2]: 0x2b005
+PCB: 30 PTE[0x3]: 0x2c005
+PCB: 30 PTE[0xff]: 0x2e007
+
+CHILD 29 FORK
+PCB: 29 currentSavedFrame: 147112
+PCB: 29 sysStackPtr: 147452
+PCB: 29 sysStackArea: 143360
+PCB: 29 PTE[0x0]: 0x29005
+PCB: 29 PTE[0x1]: 0x2a005
+PCB: 29 PTE[0x2]: 0x2b005
+PCB: 29 PTE[0x3]: 0x2c005
+PCB: 29 PTE[0xff]: 0x2e007
+
+Cpu: writing a read-only page, vaddr=0xff000
+----ROP Handler called----
+MemAllocPg: Pg 36 allocated by PID: 30
+	virtPg: 0x0, phys_pg: 0x29005
+	virtPg: 0x1, phys_pg: 0x2a005
+	virtPg: 0x2, phys_pg: 0x2b005
+	virtPg: 0x3, phys_pg: 0x2c005
+	virtPg: 0xff, phys_pg: 0x24001
+----ROP handle exiting----
+PARENT FOR THE PROCESS: 30
+test_fork (30): Done!
+Cpu: writing a read-only page, vaddr=0xff000
+----ROP Handler called----
+	virtPg: 0x0, phys_pg: 0x29005
+	virtPg: 0x1, phys_pg: 0x2a005
+	virtPg: 0x2, phys_pg: 0x2b005
+	virtPg: 0x3, phys_pg: 0x2c005
+	virtPg: 0xff, phys_pg: 0x2e003
+----ROP handle exiting----
+CHILD OF THE PROCESS: 29
+test_fork (29): Done!
+No runnable processes - exiting!
+Exiting at program request.
+Instructions executed: 6568988
+Time simulated: 6.569 secs
+Real time elapsed: 0.281 secs
+Execution rate: 23.39M simulated instructions per real second.

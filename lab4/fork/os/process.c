@@ -1099,7 +1099,7 @@ void VerifyFork(PCB * pcb){
   for (i=0; i <  MEM_L1TABLE_SIZE; i++){
     //check if the pagetable entries are valid:
     if (pcb->pagetable[i] != 0) {
-      printf("PCB: %d PTE[%d]: %d\n", GetPidFromAddress(pcb), i, pcb->pagetable[i]);
+      printf("PCB: %d PTE[0x%x]: 0x%x\n", GetPidFromAddress(pcb), i, pcb->pagetable[i]);
     }
   }
   printf("\n");

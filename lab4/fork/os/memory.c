@@ -344,6 +344,8 @@ void MemoryFreePte(uint32 pte) {
 }
 
 int MemoryROPAccessHandler(PCB* pcb){
+  int i;
+
   uint32 new_page;
   // find fault_addr from pcb
   uint32 fault_addr = pcb->currentSavedFrame[PROCESS_STACK_FAULT];
@@ -354,9 +356,7 @@ int MemoryROPAccessHandler(PCB* pcb){
   // find pte associated with this l1_page_num
   // find physical_page_num
   uint32 phys_page = (pcb->pagetable[fault_page] & MEM_PTE_MASK)/MEM_PAGESIZE;
-
-  
-
+  printf("----ROP Handler called----\n");
   // if refcounter for the physical page < 1
   if(page_refcounters[phys_page] < 1){
     // kill the process, return MEM_FAIL
@@ -381,7 +381,13 @@ int MemoryROPAccessHandler(PCB* pcb){
     // decrement refcounter
     page_refcounters[phys_page]--;
   }
-  
+
+	for (i = 0;i < MEM_L1TABLE_SIZE;++i){
+		if (pcb->pagetable[i] & MEM_PTE_VALID){
+			printf("\tvirtPg: 0x%x, phys_pg: 0x%x\n", i, pcb->pagetable[i]);
+	  }
+  }
+  printf("----ROP handle exiting----\n");
   return MEM_SUCCESS;
 }
 
